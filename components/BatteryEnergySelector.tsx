@@ -27,37 +27,37 @@ export function BatteryEnergySelector({ selectedEnergy, onSelectEnergy }: Batter
   const dynamicStyles = StyleSheet.create({
     container: {
       backgroundColor: isDark ? colors.darkCard : colors.card,
-      borderRadius: 16,
-      padding: 20,
-      gap: 20,
+      borderRadius: 14,
+      padding: 16,
+      gap: 16,
     },
     batteryContainer: {
       flexDirection: 'row',
       alignItems: 'center',
-      gap: 8,
+      gap: 6,
     },
     batteryOuter: {
       flex: 1,
-      height: 60,
-      borderWidth: 3,
+      height: 50,
+      borderWidth: 2.5,
       borderColor: isDark ? colors.darkTextSecondary : colors.textSecondary,
-      borderRadius: 12,
-      padding: 4,
+      borderRadius: 10,
+      padding: 3,
       flexDirection: 'row',
       gap: 2,
       overflow: 'hidden',
     },
     batteryTip: {
-      width: 12,
-      height: 36,
+      width: 10,
+      height: 30,
       backgroundColor: isDark ? colors.darkTextSecondary : colors.textSecondary,
-      borderTopRightRadius: 6,
-      borderBottomRightRadius: 6,
+      borderTopRightRadius: 5,
+      borderBottomRightRadius: 5,
     },
     batterySegment: {
       flex: 1,
       height: '100%',
-      borderRadius: 6,
+      borderRadius: 5,
       justifyContent: 'center',
       alignItems: 'center',
     },
@@ -68,15 +68,15 @@ export function BatteryEnergySelector({ selectedEnergy, onSelectEnergy }: Batter
     labelsContainer: {
       flexDirection: 'row',
       justifyContent: 'space-between',
-      paddingHorizontal: 4,
+      paddingHorizontal: 2,
     },
     labelButton: {
       flex: 1,
       alignItems: 'center',
-      paddingVertical: 8,
+      paddingVertical: 6,
     },
     batteryLabel: {
-      fontSize: 12,
+      fontSize: 10,
       fontWeight: '600',
       color: isDark ? colors.darkTextSecondary : colors.textSecondary,
       textAlign: 'center',
@@ -84,16 +84,16 @@ export function BatteryEnergySelector({ selectedEnergy, onSelectEnergy }: Batter
     batteryLabelSelected: {
       color: isDark ? colors.darkPrimary : colors.primary,
       fontWeight: '700',
-      fontSize: 13,
+      fontSize: 11,
     },
     selectedText: {
-      fontSize: 16,
+      fontSize: 14,
       fontWeight: '600',
       color: isDark ? colors.darkText : colors.text,
       textAlign: 'center',
     },
     selectedDescription: {
-      fontSize: 13,
+      fontSize: 11,
       color: isDark ? colors.darkTextSecondary : colors.textSecondary,
       textAlign: 'center',
       fontStyle: 'italic',
@@ -161,7 +161,7 @@ export function BatteryEnergySelector({ selectedEnergy, onSelectEnergy }: Batter
       </View>
       
       {selectedEnergy && (
-        <View style={{ gap: 4 }}>
+        <View style={{ gap: 3 }}>
           <Text style={dynamicStyles.selectedText}>
             {energyLevelLabels[selectedEnergy]}
           </Text>

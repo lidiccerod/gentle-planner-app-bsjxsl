@@ -14,6 +14,7 @@ import {
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { colors } from '@/styles/commonStyles';
 import { IconSymbol } from '@/components/IconSymbol';
+import { DateDisplay } from '@/components/DateDisplay';
 import { storageUtils } from '@/utils/storage';
 import { Task, EnergyLevel, TaskPriority, TaskCategory, TaskBucket, energyLevelLabels } from '@/types';
 
@@ -198,42 +199,51 @@ export default function TasksScreen() {
       flex: 1,
       backgroundColor: isDark ? colors.darkBackground : colors.background,
     },
+    headerRow: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'flex-start',
+      marginBottom: 6,
+    },
+    titleContainer: {
+      flex: 1,
+    },
     title: {
-      fontSize: 32,
+      fontSize: 26,
       fontWeight: '700',
       color: isDark ? colors.darkText : colors.text,
-      marginBottom: 8,
+      marginBottom: 6,
     },
     energyBadge: {
       backgroundColor: isDark ? colors.darkHighlight : colors.highlight,
-      paddingHorizontal: 12,
-      paddingVertical: 6,
-      borderRadius: 12,
+      paddingHorizontal: 10,
+      paddingVertical: 5,
+      borderRadius: 10,
       alignSelf: 'flex-start',
-      marginBottom: 8,
+      marginBottom: 6,
     },
     energyBadgeText: {
-      fontSize: 14,
+      fontSize: 12,
       color: isDark ? colors.darkText : colors.text,
       fontWeight: '500',
       textTransform: 'capitalize',
     },
     reminderText: {
-      fontSize: 14,
+      fontSize: 12,
       color: isDark ? colors.darkTextSecondary : colors.textSecondary,
       fontStyle: 'italic',
     },
     filterContainer: {
       flexDirection: 'row',
-      gap: 10,
-      marginBottom: 16,
+      gap: 8,
+      marginBottom: 14,
       flexWrap: 'wrap',
     },
     filterButton: {
       backgroundColor: isDark ? colors.darkCard : colors.card,
-      paddingHorizontal: 16,
-      paddingVertical: 10,
-      borderRadius: 20,
+      paddingHorizontal: 12,
+      paddingVertical: 8,
+      borderRadius: 16,
       borderWidth: 1,
       borderColor: isDark ? colors.darkAccent : colors.accent,
     },
@@ -242,7 +252,7 @@ export default function TasksScreen() {
       borderColor: isDark ? colors.darkPrimary : colors.primary,
     },
     filterButtonText: {
-      fontSize: 13,
+      fontSize: 11,
       color: isDark ? colors.darkText : colors.text,
       fontWeight: '500',
     },
@@ -251,62 +261,62 @@ export default function TasksScreen() {
       fontWeight: '600',
     },
     sectionTitle: {
-      fontSize: 20,
+      fontSize: 17,
       fontWeight: '600',
       color: isDark ? colors.darkText : colors.text,
-      marginBottom: 12,
+      marginBottom: 10,
     },
     taskCard: {
       backgroundColor: isDark ? colors.darkCard : colors.card,
       borderRadius: 12,
-      padding: 16,
-      marginBottom: 12,
+      padding: 14,
+      marginBottom: 10,
       flexDirection: 'row',
       alignItems: 'center',
-      gap: 12,
+      gap: 10,
     },
     taskCardCompleted: {
       opacity: 0.6,
     },
     taskTitle: {
-      fontSize: 16,
+      fontSize: 14,
       fontWeight: '500',
       color: isDark ? colors.darkText : colors.text,
-      marginBottom: 6,
+      marginBottom: 5,
     },
     taskTitleCompleted: {
       textDecorationLine: 'line-through',
       color: isDark ? colors.darkTextSecondary : colors.textSecondary,
     },
     energyBadgeSmall: {
-      paddingHorizontal: 8,
+      paddingHorizontal: 7,
       paddingVertical: 3,
-      borderRadius: 8,
+      borderRadius: 7,
     },
     badgeText: {
-      fontSize: 11,
+      fontSize: 10,
       color: isDark ? colors.darkText : colors.text,
       fontWeight: '500',
       textTransform: 'capitalize',
     },
     emptyText: {
-      fontSize: 20,
+      fontSize: 17,
       fontWeight: '600',
       color: isDark ? colors.darkText : colors.text,
-      marginTop: 16,
+      marginTop: 14,
     },
     emptySubtext: {
-      fontSize: 14,
+      fontSize: 12,
       color: isDark ? colors.darkTextSecondary : colors.textSecondary,
-      marginTop: 8,
+      marginTop: 6,
     },
     addButton: {
       position: 'absolute',
       bottom: 100,
       right: 20,
-      width: 60,
-      height: 60,
-      borderRadius: 30,
+      width: 56,
+      height: 56,
+      borderRadius: 28,
       backgroundColor: isDark ? colors.darkPrimary : colors.primary,
       alignItems: 'center',
       justifyContent: 'center',
@@ -322,48 +332,48 @@ export default function TasksScreen() {
       backgroundColor: isDark ? colors.darkCard : colors.card,
       borderTopLeftRadius: 24,
       borderTopRightRadius: 24,
-      padding: 24,
+      padding: 20,
       maxHeight: '80%',
     },
     modalTitle: {
-      fontSize: 24,
+      fontSize: 20,
       fontWeight: '700',
       color: isDark ? colors.darkText : colors.text,
     },
     input: {
       backgroundColor: isDark ? colors.darkBackground : colors.background,
       borderRadius: 12,
-      padding: 16,
-      fontSize: 16,
+      padding: 14,
+      fontSize: 14,
       color: isDark ? colors.darkText : colors.text,
-      marginBottom: 20,
+      marginBottom: 16,
     },
     modalLabel: {
-      fontSize: 16,
+      fontSize: 14,
       fontWeight: '600',
       color: isDark ? colors.darkText : colors.text,
-      marginBottom: 12,
+      marginBottom: 10,
     },
     optionButton: {
       flex: 1,
       backgroundColor: isDark ? colors.darkBackground : colors.background,
-      padding: 12,
+      padding: 10,
       borderRadius: 10,
       alignItems: 'center',
-      minWidth: 80,
+      minWidth: 70,
     },
     categoryButton: {
       backgroundColor: isDark ? colors.darkBackground : colors.background,
-      padding: 12,
+      padding: 10,
       borderRadius: 10,
       alignItems: 'center',
-      marginBottom: 8,
+      marginBottom: 6,
       flexDirection: 'row',
       justifyContent: 'center',
-      gap: 8,
+      gap: 6,
     },
     optionText: {
-      fontSize: 13,
+      fontSize: 11,
       color: isDark ? colors.darkText : colors.text,
       fontWeight: '500',
       textTransform: 'capitalize',
@@ -374,43 +384,43 @@ export default function TasksScreen() {
     },
     addTaskButton: {
       backgroundColor: isDark ? colors.darkPrimary : colors.primary,
-      padding: 16,
+      padding: 14,
       borderRadius: 12,
       alignItems: 'center',
-      marginTop: 10,
+      marginTop: 8,
     },
     addTaskButtonDisabled: {
       opacity: 0.5,
     },
     addTaskButtonText: {
-      fontSize: 18,
+      fontSize: 15,
       fontWeight: '600',
       color: isDark ? colors.darkBackground : colors.card,
     },
     dueDateButton: {
       backgroundColor: isDark ? colors.darkBackground : colors.background,
-      padding: 16,
+      padding: 14,
       borderRadius: 12,
       flexDirection: 'row',
       alignItems: 'center',
       justifyContent: 'space-between',
-      marginBottom: 20,
+      marginBottom: 16,
     },
     dueDateText: {
-      fontSize: 16,
+      fontSize: 14,
       color: isDark ? colors.darkText : colors.text,
       fontWeight: '500',
     },
     dueDatePlaceholder: {
-      fontSize: 16,
+      fontSize: 14,
       color: isDark ? colors.darkTextSecondary : colors.textSecondary,
     },
     dueDateBadge: {
       backgroundColor: isDark ? colors.darkSecondary : colors.secondary,
-      paddingHorizontal: 8,
+      paddingHorizontal: 7,
       paddingVertical: 3,
-      borderRadius: 8,
-      marginLeft: 8,
+      borderRadius: 7,
+      marginLeft: 6,
     },
   });
 
@@ -422,7 +432,12 @@ export default function TasksScreen() {
         showsVerticalScrollIndicator={false}
       >
         <View style={styles.header}>
-          <Text style={dynamicStyles.title}>Today&apos;s Tasks</Text>
+          <View style={dynamicStyles.headerRow}>
+            <View style={dynamicStyles.titleContainer}>
+              <Text style={dynamicStyles.title}>Today&apos;s Tasks</Text>
+            </View>
+            <DateDisplay />
+          </View>
           {todayEnergy && (
             <View style={dynamicStyles.energyBadge}>
               <Text style={dynamicStyles.energyBadgeText}>
@@ -559,7 +574,7 @@ export default function TasksScreen() {
             <IconSymbol
               ios_icon_name="checkmark.circle"
               android_material_icon_name="check_circle_outline"
-              size={64}
+              size={56}
               color={isDark ? colors.darkTextSecondary : colors.textSecondary}
             />
             <Text style={dynamicStyles.emptyText}>No tasks match your filters</Text>
@@ -577,7 +592,7 @@ export default function TasksScreen() {
         <IconSymbol
           ios_icon_name="plus"
           android_material_icon_name="add"
-          size={28}
+          size={26}
           color={isDark ? colors.darkBackground : colors.card}
         />
       </TouchableOpacity>
@@ -596,7 +611,7 @@ export default function TasksScreen() {
                 <IconSymbol
                   ios_icon_name="xmark"
                   android_material_icon_name="close"
-                  size={24}
+                  size={22}
                   color={isDark ? colors.darkText : colors.text}
                 />
               </TouchableOpacity>
@@ -678,12 +693,12 @@ export default function TasksScreen() {
                 {newTaskDueDate && (
                   <TouchableOpacity
                     onPress={() => setNewTaskDueDate(undefined)}
-                    style={{ marginRight: 12 }}
+                    style={{ marginRight: 10 }}
                   >
                     <IconSymbol
                       ios_icon_name="xmark.circle.fill"
                       android_material_icon_name="cancel"
-                      size={20}
+                      size={18}
                       color={isDark ? colors.darkTextSecondary : colors.textSecondary}
                     />
                   </TouchableOpacity>
@@ -691,7 +706,7 @@ export default function TasksScreen() {
                 <IconSymbol
                   ios_icon_name="calendar"
                   android_material_icon_name="calendar_today"
-                  size={20}
+                  size={18}
                   color={isDark ? colors.darkText : colors.text}
                 />
               </View>
@@ -741,7 +756,7 @@ export default function TasksScreen() {
                 <IconSymbol
                   ios_icon_name="plus.circle"
                   android_material_icon_name="add_circle_outline"
-                  size={20}
+                  size={18}
                   color={isDark ? colors.darkPrimary : colors.primary}
                 />
                 <Text style={[dynamicStyles.optionText, { color: isDark ? colors.darkPrimary : colors.primary }]}>
@@ -778,7 +793,7 @@ export default function TasksScreen() {
                 <IconSymbol
                   ios_icon_name="xmark"
                   android_material_icon_name="close"
-                  size={24}
+                  size={22}
                   color={isDark ? colors.darkText : colors.text}
                 />
               </TouchableOpacity>
@@ -822,44 +837,44 @@ function TaskItem({ task, onToggle, onDelete, getEnergyColor, getPriorityLabel, 
     taskCard: {
       backgroundColor: isDark ? colors.darkCard : colors.card,
       borderRadius: 12,
-      padding: 16,
-      marginBottom: 12,
+      padding: 14,
+      marginBottom: 10,
       flexDirection: 'row',
       alignItems: 'center',
-      gap: 12,
+      gap: 10,
     },
     taskCardCompleted: {
       opacity: 0.6,
     },
     taskTitle: {
-      fontSize: 16,
+      fontSize: 14,
       fontWeight: '500',
       color: isDark ? colors.darkText : colors.text,
-      marginBottom: 6,
+      marginBottom: 5,
     },
     taskTitleCompleted: {
       textDecorationLine: 'line-through',
       color: isDark ? colors.darkTextSecondary : colors.textSecondary,
     },
     energyBadgeSmall: {
-      paddingHorizontal: 8,
+      paddingHorizontal: 7,
       paddingVertical: 3,
-      borderRadius: 8,
+      borderRadius: 7,
     },
     badgeText: {
-      fontSize: 11,
+      fontSize: 10,
       color: isDark ? colors.darkText : colors.text,
       fontWeight: '500',
       textTransform: 'capitalize',
     },
     dueDateBadge: {
       backgroundColor: isDark ? colors.darkSecondary : colors.secondary,
-      paddingHorizontal: 8,
+      paddingHorizontal: 7,
       paddingVertical: 3,
-      borderRadius: 8,
+      borderRadius: 7,
       flexDirection: 'row',
       alignItems: 'center',
-      gap: 4,
+      gap: 3,
     },
   });
 
@@ -872,7 +887,7 @@ function TaskItem({ task, onToggle, onDelete, getEnergyColor, getPriorityLabel, 
         <IconSymbol
           ios_icon_name={task.completed ? "checkmark.circle.fill" : "circle"}
           android_material_icon_name={task.completed ? "check_circle" : "radio_button_unchecked"}
-          size={28}
+          size={26}
           color={task.completed ? (isDark ? colors.darkPrimary : colors.primary) : (isDark ? colors.darkTextSecondary : colors.textSecondary)}
         />
       </TouchableOpacity>
@@ -890,7 +905,7 @@ function TaskItem({ task, onToggle, onDelete, getEnergyColor, getPriorityLabel, 
               <IconSymbol
                 ios_icon_name="calendar"
                 android_material_icon_name="calendar_today"
-                size={12}
+                size={10}
                 color={isDark ? colors.darkText : colors.text}
               />
               <Text style={dynamicStyles.badgeText}>{formatDate(task.dueDate)}</Text>
@@ -906,7 +921,7 @@ function TaskItem({ task, onToggle, onDelete, getEnergyColor, getPriorityLabel, 
         <IconSymbol
           ios_icon_name="trash"
           android_material_icon_name="delete"
-          size={20}
+          size={18}
           color={isDark ? colors.darkTextSecondary : colors.textSecondary}
         />
       </TouchableOpacity>
@@ -924,10 +939,10 @@ const styles = StyleSheet.create({
     paddingBottom: 120,
   },
   header: {
-    marginBottom: 24,
+    marginBottom: 20,
   },
   section: {
-    marginBottom: 24,
+    marginBottom: 20,
   },
   taskCheckbox: {
     padding: 4,
@@ -938,31 +953,31 @@ const styles = StyleSheet.create({
   taskMeta: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
+    gap: 6,
     flexWrap: 'wrap',
   },
   deleteButton: {
-    padding: 8,
+    padding: 6,
   },
   emptyState: {
     alignItems: 'center',
     justifyContent: 'center',
-    paddingVertical: 60,
+    paddingVertical: 50,
   },
   modalHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 24,
+    marginBottom: 20,
   },
   optionsRow: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: 10,
-    marginBottom: 20,
+    gap: 8,
+    marginBottom: 16,
   },
   categoryScroll: {
-    maxHeight: 200,
-    marginBottom: 20,
+    maxHeight: 180,
+    marginBottom: 16,
   },
 });

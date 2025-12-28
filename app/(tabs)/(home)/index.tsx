@@ -12,6 +12,7 @@ import {
 import { colors, commonStyles } from '@/styles/commonStyles';
 import { IconSymbol } from '@/components/IconSymbol';
 import { BatteryEnergySelector } from '@/components/BatteryEnergySelector';
+import { DateDisplay } from '@/components/DateDisplay';
 import { storageUtils } from '@/utils/storage';
 import { DailyCheckIn, EnergyLevel, Symptom, Mood } from '@/types';
 
@@ -104,14 +105,23 @@ export default function HomeScreen() {
       flex: 1,
       backgroundColor: isDark ? colors.darkBackground : colors.background,
     },
+    headerRow: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'flex-start',
+      marginBottom: 6,
+    },
+    titleContainer: {
+      flex: 1,
+    },
     title: {
-      fontSize: 32,
+      fontSize: 26,
       fontWeight: '700',
       color: isDark ? colors.darkText : colors.text,
-      marginBottom: 8,
+      marginBottom: 6,
     },
     encouragingText: {
-      fontSize: 16,
+      fontSize: 14,
       color: isDark ? colors.darkTextSecondary : colors.textSecondary,
       fontStyle: 'italic',
     },
@@ -119,27 +129,27 @@ export default function HomeScreen() {
       flexDirection: 'row',
       alignItems: 'center',
       backgroundColor: isDark ? colors.darkHighlight : colors.highlight,
-      padding: 16,
+      padding: 14,
       borderRadius: 12,
-      marginBottom: 24,
-      gap: 12,
+      marginBottom: 20,
+      gap: 10,
     },
     completedText: {
-      fontSize: 16,
+      fontSize: 14,
       color: isDark ? colors.darkText : colors.text,
       fontWeight: '500',
     },
     sectionTitle: {
-      fontSize: 20,
+      fontSize: 17,
       fontWeight: '600',
       color: isDark ? colors.darkText : colors.text,
-      marginBottom: 16,
+      marginBottom: 14,
     },
     symptomChip: {
       backgroundColor: isDark ? colors.darkCard : colors.card,
-      paddingHorizontal: 16,
-      paddingVertical: 10,
-      borderRadius: 20,
+      paddingHorizontal: 14,
+      paddingVertical: 8,
+      borderRadius: 18,
       borderWidth: 1,
       borderColor: isDark ? colors.darkAccent : colors.accent,
     },
@@ -148,7 +158,7 @@ export default function HomeScreen() {
       borderColor: isDark ? colors.darkAccent : colors.accent,
     },
     symptomText: {
-      fontSize: 14,
+      fontSize: 12,
       color: isDark ? colors.darkText : colors.text,
       fontWeight: '500',
     },
@@ -159,10 +169,10 @@ export default function HomeScreen() {
     moodButton: {
       width: '30%',
       backgroundColor: isDark ? colors.darkCard : colors.card,
-      padding: 12,
+      padding: 10,
       borderRadius: 12,
       alignItems: 'center',
-      gap: 6,
+      gap: 5,
       borderWidth: 2,
       borderColor: 'transparent',
     },
@@ -171,7 +181,7 @@ export default function HomeScreen() {
       borderColor: isDark ? colors.darkPrimary : colors.primary,
     },
     moodLabel: {
-      fontSize: 12,
+      fontSize: 11,
       color: isDark ? colors.darkText : colors.text,
       textAlign: 'center',
       fontWeight: '500',
@@ -182,7 +192,7 @@ export default function HomeScreen() {
     },
     saveButton: {
       backgroundColor: isDark ? colors.darkPrimary : colors.primary,
-      padding: 18,
+      padding: 16,
       borderRadius: 12,
       alignItems: 'center',
       marginTop: 8,
@@ -192,7 +202,7 @@ export default function HomeScreen() {
       opacity: 0.5,
     },
     saveButtonText: {
-      fontSize: 18,
+      fontSize: 16,
       fontWeight: '600',
       color: isDark ? colors.darkBackground : colors.card,
     },
@@ -206,7 +216,12 @@ export default function HomeScreen() {
         showsVerticalScrollIndicator={false}
       >
         <View style={styles.header}>
-          <Text style={dynamicStyles.title}>Daily Check-In</Text>
+          <View style={dynamicStyles.headerRow}>
+            <View style={dynamicStyles.titleContainer}>
+              <Text style={dynamicStyles.title}>Daily Check-In</Text>
+            </View>
+            <DateDisplay />
+          </View>
           <Text style={dynamicStyles.encouragingText}>{getEncouragingMessage()}</Text>
         </View>
 
@@ -215,7 +230,7 @@ export default function HomeScreen() {
             <IconSymbol
               ios_icon_name="checkmark.circle.fill"
               android_material_icon_name="check_circle"
-              size={24}
+              size={22}
               color={isDark ? colors.darkPrimary : colors.primary}
             />
             <Text style={dynamicStyles.completedText}>Check-in completed for today</Text>
@@ -245,7 +260,7 @@ export default function HomeScreen() {
                   <IconSymbol
                     ios_icon_name="face.smiling"
                     android_material_icon_name={item.icon}
-                    size={24}
+                    size={22}
                     color={selectedMood === item.mood 
                       ? (isDark ? colors.darkBackground : colors.card)
                       : (isDark ? colors.darkText : colors.text)
@@ -318,19 +333,19 @@ const styles = StyleSheet.create({
     paddingBottom: 120,
   },
   header: {
-    marginBottom: 24,
+    marginBottom: 20,
   },
   section: {
-    marginBottom: 32,
+    marginBottom: 28,
   },
   symptomsGrid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: 10,
+    gap: 8,
   },
   moodsGrid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: 12,
+    gap: 10,
   },
 });

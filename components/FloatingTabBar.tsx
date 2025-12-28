@@ -112,22 +112,22 @@ export default function FloatingTabBar({
     blurContainer: {
       ...styles.blurContainer,
       borderWidth: 1.2,
-      borderColor: isDark ? colors.almondDust : colors.overcast,
+      borderColor: isDark ? colors.darkTextSecondary : colors.dustyBlue,
       ...Platform.select({
         ios: {
           backgroundColor: isDark
-            ? 'rgba(57, 56, 49, 0.8)'
-            : 'rgba(255, 255, 255, 0.6)',
+            ? 'rgba(42, 41, 38, 0.8)'
+            : 'rgba(255, 255, 255, 0.7)',
         },
         android: {
           backgroundColor: isDark
-            ? 'rgba(57, 56, 49, 0.95)'
-            : 'rgba(255, 255, 255, 0.6)',
+            ? 'rgba(42, 41, 38, 0.95)'
+            : 'rgba(255, 255, 255, 0.7)',
         },
         web: {
           backgroundColor: isDark
-            ? 'rgba(57, 56, 49, 0.95)'
-            : 'rgba(255, 255, 255, 0.6)',
+            ? 'rgba(42, 41, 38, 0.95)'
+            : 'rgba(255, 255, 255, 0.7)',
           backdropFilter: 'blur(10px)',
         },
       }),
@@ -138,8 +138,8 @@ export default function FloatingTabBar({
     indicator: {
       ...styles.indicator,
       backgroundColor: isDark
-        ? 'rgba(198, 201, 210, 0.15)'
-        : 'rgba(198, 201, 210, 0.2)',
+        ? 'rgba(185, 203, 217, 0.15)'
+        : 'rgba(185, 203, 217, 0.25)',
       width: `${tabWidthPercent}%` as `${number}%`,
     },
   };
@@ -174,20 +174,20 @@ export default function FloatingTabBar({
                       <IconSymbol
                         android_material_icon_name={tab.icon}
                         ios_icon_name={tab.icon}
-                        size={24}
+                        size={22}
                         color={isActive 
-                          ? (isDark ? colors.earlyDusk : colors.coffeeGrounds)
-                          : (isDark ? colors.almondDust : colors.almondDust)
+                          ? (isDark ? colors.dustyBlue : colors.text)
+                          : (isDark ? colors.darkTextSecondary : colors.textSecondary)
                         }
                       />
                       <Text
                         style={[
                           styles.tabLabel,
                           { 
-                            color: isDark ? colors.almondDust : colors.almondDust
+                            color: isDark ? colors.darkTextSecondary : colors.textSecondary
                           },
                           isActive && { 
-                            color: isDark ? colors.earlyDusk : colors.coffeeGrounds,
+                            color: isDark ? colors.dustyBlue : colors.text,
                             fontWeight: '600' 
                           },
                         ]}

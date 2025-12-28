@@ -7,13 +7,17 @@ import {
   ScrollView,
   TouchableOpacity,
   Platform,
+  useColorScheme,
 } from 'react-native';
 import { colors } from '@/styles/commonStyles';
 import { IconSymbol } from '@/components/IconSymbol';
+import { DateDisplay } from '@/components/DateDisplay';
 import { storageUtils } from '@/utils/storage';
 import { DailyCheckIn, Task, EnergyLevel } from '@/types';
 
 export default function WeeklyScreen() {
+  const colorScheme = useColorScheme();
+  const isDark = colorScheme === 'dark';
   const [weekData, setWeekData] = useState<{
     date: string;
     dayName: string;
@@ -94,33 +98,113 @@ export default function WeeklyScreen() {
   const averageEnergy = getAverageEnergy();
   const totalCompleted = getTotalTasksCompleted();
 
+  const dynamicStyles = StyleSheet.create({
+    container: {
+      flex: 1,
+      backgroundColor: isDark ? colors.darkBackground : colors.background,
+    },
+    headerRow: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'flex-start',
+      marginBottom: 3,
+    },
+    titleContainer: {
+      flex: 1,
+    },
+    title: {
+      fontSize: 26,
+      fontWeight: '700',
+      color: isDark ? colors.darkText : colors.text,
+      marginBottom: 3,
+    },
+    subtitle: {
+      fontSize: 14,
+      color: isDark ? colors.darkTextSecondary : colors.textSecondary,
+      fontStyle: 'italic',
+    },
+    statsCard: {
+      backgroundColor: isDark ? colors.darkCard : colors.card,
+      borderRadius: 14,
+      padding: 16,
+      marginBottom: 20,
+      flexDirection: 'row',
+      alignItems: 'center',
+    },
+    statItem: {
+      flex: 1,
+      alignItems: 'center',
+    },
+    statDivider: {
+      width: 1,
+      height: 36,
+      backgroundColor: isDark ? colors.darkSecondary : colors.secondary,
+    },
+    statLabel: {
+      fontSize: 12,
+      color: isDark ? colors.darkTextSecondary : colors.textSecondary,
+      marginBottom: 6,
+      textAlign: 'center',
+    },
+    statValue: {
+      fontSize: 17,
+      fontWeight: '700',
+      color: isDark ? colors.darkText : colors.text,
+      textTransform: 'capitalize',
+    },
+    energyIndicator: {
+      paddingHorizontal: 14,
+      paddingVertical: 6,
+      borderRadius: 10,
+    },
+    encouragementCard: {
+      backgroundColor: isDark ? colors.darkHighlight : colors.highlight,
+      borderRadius: 14,
+      padding: 20,
+      alignItems: 'center',
+      gap: 10,
+    },
+    encouragementText: {
+      fontSize: 14,
+      color: isDark ? colors.darkText : colors.text,
+      textAlign: 'center',
+      fontStyle: 'italic',
+      lineHeight: 20,
+    },
+  });
+
   return (
-    <View style={styles.container}>
+    <View style={dynamicStyles.container}>
       <ScrollView
         style={styles.scrollView}
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
       >
         <View style={styles.header}>
-          <Text style={styles.title}>Weekly Overview</Text>
-          <Text style={styles.subtitle}>Progress looks different every day</Text>
+          <View style={dynamicStyles.headerRow}>
+            <View style={dynamicStyles.titleContainer}>
+              <Text style={dynamicStyles.title}>Weekly Overview</Text>
+            </View>
+            <DateDisplay />
+          </View>
+          <Text style={dynamicStyles.subtitle}>Progress looks different every day</Text>
         </View>
 
-        <View style={styles.statsCard}>
-          <View style={styles.statItem}>
-            <Text style={styles.statLabel}>Average Energy</Text>
-            <View style={[styles.energyIndicator, { backgroundColor: getEnergyColor(averageEnergy) }]}>
-              <Text style={styles.statValue}>
+        <View style={dynamicStyles.statsCard}>
+          <View style={dynamicStyles.statItem}>
+            <Text style={dynamicStyles.statLabel}>Average Energy</Text>
+            <View style={[dynamicStyles.energyIndicator, { backgroundColor: getEnergyColor(averageEnergy) }]}>
+              <Text style={dynamicStyles.statValue}>
                 {averageEnergy ? averageEnergy : 'N/A'}
               </Text>
             </View>
           </View>
           
-          <View style={styles.statDivider} />
+          <View style={dynamicStyles.statDivider} />
           
-          <View style={styles.statItem}>
-            <Text style={styles.statLabel}>Tasks Completed</Text>
-            <Text style={styles.statValue}>{totalCompleted}</Text>
+          <View style={dynamicStyles.statItem}>
+            <Text style={dynamicStyles.statLabel}>Tasks Completed</Text>
+            <Text style={dynamicStyles.statValue}>{totalCompleted}</Text>
           </View>
         </View>
 
@@ -131,19 +215,20 @@ export default function WeeklyScreen() {
                 day={day}
                 getEnergyColor={getEnergyColor}
                 getCompletionRate={getCompletionRate}
+                isDark={isDark}
               />
             </React.Fragment>
           ))}
         </View>
 
-        <View style={styles.encouragementCard}>
+        <View style={dynamicStyles.encouragementCard}>
           <IconSymbol
             ios_icon_name="heart.fill"
             android_material_icon_name="favorite"
-            size={32}
-            color={colors.primary}
+            size={28}
+            color={isDark ? colors.darkPrimary : colors.primary}
           />
-          <Text style={styles.encouragementText}>
+          <Text style={dynamicStyles.encouragementText}>
             You&apos;re allowed to go slow. Every small step counts.
           </Text>
         </View>
@@ -161,26 +246,89 @@ interface DayCardProps {
   };
   getEnergyColor: (energy: EnergyLevel | null) => string;
   getCompletionRate: (tasks: Task[]) => number;
+  isDark: boolean;
 }
 
-function DayCard({ day, getEnergyColor, getCompletionRate }: DayCardProps) {
+function DayCard({ day, getEnergyColor, getCompletionRate, isDark }: DayCardProps) {
   const isToday = day.date === new Date().toISOString().split('T')[0];
   const completionRate = getCompletionRate(day.tasks);
 
+  const dynamicStyles = StyleSheet.create({
+    dayCard: {
+      backgroundColor: isDark ? colors.darkCard : colors.card,
+      borderRadius: 12,
+      padding: 14,
+      borderWidth: 2,
+      borderColor: 'transparent',
+    },
+    dayCardToday: {
+      borderColor: isDark ? colors.darkPrimary : colors.primary,
+    },
+    dayName: {
+      fontSize: 16,
+      fontWeight: '600',
+      color: isDark ? colors.darkText : colors.text,
+    },
+    dayNameToday: {
+      color: isDark ? colors.darkPrimary : colors.primary,
+    },
+    dayDate: {
+      fontSize: 12,
+      color: isDark ? colors.darkTextSecondary : colors.textSecondary,
+      marginTop: 2,
+    },
+    energyDot: {
+      width: 28,
+      height: 28,
+      borderRadius: 14,
+    },
+    taskCountText: {
+      fontSize: 12,
+      color: isDark ? colors.darkTextSecondary : colors.textSecondary,
+    },
+    progressBar: {
+      height: 5,
+      backgroundColor: isDark ? colors.darkBackground : colors.background,
+      borderRadius: 2.5,
+      overflow: 'hidden',
+    },
+    progressFill: {
+      height: '100%',
+      backgroundColor: isDark ? colors.darkPrimary : colors.primary,
+      borderRadius: 2.5,
+    },
+    symptomTag: {
+      backgroundColor: isDark ? colors.darkSecondary : colors.secondary,
+      paddingHorizontal: 7,
+      paddingVertical: 3,
+      borderRadius: 7,
+    },
+    symptomTagText: {
+      fontSize: 10,
+      color: isDark ? colors.darkText : colors.text,
+      textTransform: 'capitalize',
+    },
+    noDataText: {
+      fontSize: 12,
+      color: isDark ? colors.darkTextSecondary : colors.textSecondary,
+      fontStyle: 'italic',
+    },
+  });
+
   return (
-    <View style={[styles.dayCard, isToday && styles.dayCardToday]}>
+    <View style={[dynamicStyles.dayCard, isToday && dynamicStyles.dayCardToday]}>
       <View style={styles.dayHeader}>
         <View>
-          <Text style={[styles.dayName, isToday && styles.dayNameToday]}>
+          <Text style={[dynamicStyles.dayName, isToday && dynamicStyles.dayNameToday]}>
             {day.dayName}
           </Text>
-          <Text style={styles.dayDate}>
+          <Text style={dynamicStyles.dayDate}>
             {new Date(day.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
           </Text>
         </View>
         
         {day.checkIn && (
-          <View style={[styles.energyDot, { backgroundColor: getEnergyColor(day.checkIn.energyLevel) }]} />
+          <View style={[dynamicStyles.energyDot, { backgroundColor: getEnergyColor(day.checkIn.energyLevel) }]} />
         )}
       </View>
 
@@ -190,16 +338,16 @@ function DayCard({ day, getEnergyColor, getCompletionRate }: DayCardProps) {
             <IconSymbol
               ios_icon_name="checkmark.circle"
               android_material_icon_name="check_circle"
-              size={16}
-              color={colors.textSecondary}
+              size={14}
+              color={isDark ? colors.darkTextSecondary : colors.textSecondary}
             />
-            <Text style={styles.taskCountText}>
+            <Text style={dynamicStyles.taskCountText}>
               {day.tasks.filter(t => t.completed).length}/{day.tasks.length} tasks
             </Text>
           </View>
           
-          <View style={styles.progressBar}>
-            <View style={[styles.progressFill, { width: `${completionRate}%` }]} />
+          <View style={dynamicStyles.progressBar}>
+            <View style={[dynamicStyles.progressFill, { width: `${completionRate}%` }]} />
           </View>
         </View>
       )}
@@ -208,8 +356,8 @@ function DayCard({ day, getEnergyColor, getCompletionRate }: DayCardProps) {
         <View style={styles.symptomsContainer}>
           {day.checkIn.symptoms.slice(0, 3).map((symptom, index) => (
             <React.Fragment key={index}>
-              <View style={styles.symptomTag}>
-                <Text style={styles.symptomTagText}>{symptom}</Text>
+              <View style={dynamicStyles.symptomTag}>
+                <Text style={dynamicStyles.symptomTagText}>{symptom}</Text>
               </View>
             </React.Fragment>
           ))}
@@ -217,17 +365,13 @@ function DayCard({ day, getEnergyColor, getCompletionRate }: DayCardProps) {
       )}
 
       {!day.checkIn && !day.tasks.length && (
-        <Text style={styles.noDataText}>No data</Text>
+        <Text style={dynamicStyles.noDataText}>No data</Text>
       )}
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: colors.background,
-  },
   scrollView: {
     flex: 1,
   },
@@ -237,148 +381,30 @@ const styles = StyleSheet.create({
     paddingBottom: 120,
   },
   header: {
-    marginBottom: 24,
-  },
-  title: {
-    fontSize: 32,
-    fontWeight: '700',
-    color: colors.text,
-    marginBottom: 4,
-  },
-  subtitle: {
-    fontSize: 16,
-    color: colors.textSecondary,
-    fontStyle: 'italic',
-  },
-  statsCard: {
-    backgroundColor: colors.card,
-    borderRadius: 16,
-    padding: 20,
-    marginBottom: 24,
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  statItem: {
-    flex: 1,
-    alignItems: 'center',
-  },
-  statDivider: {
-    width: 1,
-    height: 40,
-    backgroundColor: colors.secondary,
-  },
-  statLabel: {
-    fontSize: 14,
-    color: colors.textSecondary,
-    marginBottom: 8,
-    textAlign: 'center',
-  },
-  statValue: {
-    fontSize: 20,
-    fontWeight: '700',
-    color: colors.text,
-    textTransform: 'capitalize',
-  },
-  energyIndicator: {
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderRadius: 12,
+    marginBottom: 20,
   },
   weekContainer: {
-    gap: 12,
-    marginBottom: 24,
-  },
-  dayCard: {
-    backgroundColor: colors.card,
-    borderRadius: 12,
-    padding: 16,
-    borderWidth: 2,
-    borderColor: 'transparent',
-  },
-  dayCardToday: {
-    borderColor: colors.primary,
+    gap: 10,
+    marginBottom: 20,
   },
   dayHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 12,
-  },
-  dayName: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: colors.text,
-  },
-  dayNameToday: {
-    color: colors.primary,
-  },
-  dayDate: {
-    fontSize: 14,
-    color: colors.textSecondary,
-    marginTop: 2,
-  },
-  energyDot: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
+    marginBottom: 10,
   },
   dayStats: {
-    marginBottom: 8,
+    marginBottom: 6,
   },
   taskCount: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 6,
-    marginBottom: 8,
-  },
-  taskCountText: {
-    fontSize: 14,
-    color: colors.textSecondary,
-  },
-  progressBar: {
-    height: 6,
-    backgroundColor: colors.background,
-    borderRadius: 3,
-    overflow: 'hidden',
-  },
-  progressFill: {
-    height: '100%',
-    backgroundColor: colors.primary,
-    borderRadius: 3,
+    gap: 5,
+    marginBottom: 6,
   },
   symptomsContainer: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: 6,
-  },
-  symptomTag: {
-    backgroundColor: colors.secondary,
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 8,
-  },
-  symptomTagText: {
-    fontSize: 11,
-    color: colors.text,
-    textTransform: 'capitalize',
-  },
-  noDataText: {
-    fontSize: 14,
-    color: colors.textSecondary,
-    fontStyle: 'italic',
-  },
-  encouragementCard: {
-    backgroundColor: colors.highlight,
-    borderRadius: 16,
-    padding: 24,
-    alignItems: 'center',
-    gap: 12,
-  },
-  encouragementText: {
-    fontSize: 16,
-    color: colors.text,
-    textAlign: 'center',
-    fontStyle: 'italic',
-    lineHeight: 24,
+    gap: 5,
   },
 });
