@@ -20,6 +20,7 @@ import Animated, {
 } from 'react-native-reanimated';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import { Href } from 'expo-router';
+import { colors } from '@/styles/commonStyles';
 
 const { width: screenWidth } = Dimensions.get('window');
 
@@ -191,7 +192,7 @@ export default function FloatingTabBar({
                     <Text
                       style={[
                         styles.tabLabel,
-                        { color: theme.dark ? '#98989D' : '#8E8E93' },
+                        { color: theme.dark ? '#98989D' : colors.text },
                         isActive && { color: theme.colors.primary, fontWeight: '600' },
                       ]}
                     >
