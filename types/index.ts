@@ -9,6 +9,14 @@ export type TaskPriority = 'optional' | 'must-do' | 'can-wait';
 
 export type TaskCategory = 'kid-related' | 'work' | 'self' | 'general';
 
+export type TaskBucket = 
+  | 'admin-mode'      // Low Energy
+  | 'medium-energy'   // Medium Energy
+  | 'heavy-energy'    // Heavy Energy
+  | 'for-others'      // For Others
+  | 'for-my-home'     // For My Home
+  | 'for-myself';     // For Myself
+
 export interface DailyCheckIn {
   id: string;
   date: string;
@@ -23,6 +31,7 @@ export interface Task {
   energyCost: EnergyLevel;
   priority: TaskPriority;
   category: TaskCategory;
+  bucket: TaskBucket;
   completed: boolean;
   date: string;
   notes?: string;
