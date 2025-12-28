@@ -1,7 +1,17 @@
 
-export type EnergyLevel = 'low' | 'medium' | 'high';
+export type EnergyLevel = 'very-low' | 'low' | 'moderate' | 'high';
 
-export type Symptom = 'fatigue' | 'pain' | 'brain-fog' | 'dizziness' | 'anxiety';
+export type Symptom = 
+  | 'fatigue' 
+  | 'pain' 
+  | 'brain-fog' 
+  | 'dizziness' 
+  | 'anxiety'
+  | 'nausea'
+  | 'sensory-sensitivity'
+  | 'overwhelm'
+  | 'emotional-exhaustion'
+  | 'irritability';
 
 export type Mood = 'calm' | 'overwhelmed' | 'hopeful' | 'tired' | 'anxious' | 'content';
 
@@ -44,3 +54,17 @@ export interface SelfCareReminder {
   enabled: boolean;
   lastCompleted?: string;
 }
+
+export const energyLevelDescriptions: Record<EnergyLevel, string> = {
+  'very-low': 'Rest/Survival',
+  'low': 'Admin Only',
+  'moderate': 'I can function but, need pacing',
+  'high': 'I have mental and physical capacity',
+};
+
+export const energyLevelLabels: Record<EnergyLevel, string> = {
+  'very-low': 'Very Low',
+  'low': 'Low',
+  'moderate': 'Moderate',
+  'high': 'High',
+};

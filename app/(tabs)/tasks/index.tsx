@@ -9,20 +9,26 @@ import {
   TextInput,
   Modal,
   Platform,
+  useColorScheme,
 } from 'react-native';
 import { colors } from '@/styles/commonStyles';
 import { IconSymbol } from '@/components/IconSymbol';
 import { storageUtils } from '@/utils/storage';
-import { Task, EnergyLevel, TaskPriority, TaskCategory } from '@/types';
+import { Task, EnergyLevel, TaskPriority, TaskCategory, TaskBucket, energyLevelLabels } from '@/types';
 
 export default function TasksScreen() {
+  const colorScheme = useColorScheme();
+  const isDark = colorScheme === 'dark';
   const [tasks, setTasks] = useState<Task[]>([]);
   const [showAddModal, setShowAddModal] = useState(false);
   const [newTaskTitle, setNewTaskTitle] = useState('');
-  const [newTaskEnergy, setNewTaskEnergy] = useState<EnergyLevel>('medium');
+  const [newTaskEnergy, setNewTaskEnergy] = useState<EnergyLevel>('moderate');
   const [newTaskPriority, setNewTaskPriority] = useState<TaskPriority>('can-wait');
   const [newTaskCategory, setNewTaskCategory] = useState<TaskCategory>('general');
+  const [newTaskBucket, setNewTaskBucket] = useState<TaskBucket>('medium-energy');
   const [todayEnergy, setTodayEnergy] = useState<EnergyLevel | null>(null);
+  const [filterByEnergy, setFilterByEnergy] = useState(false);
+  const [selectedBucketFilter, setSelectedBucketFilter] = useState<TaskBucket | 'all'>('all');
 
   useEffect(() => {
     loadTasks();
@@ -42,6 +48,20 @@ export default function TasksScreen() {
     }
   };
 
+  const getBucketFromEnergy = (energy: EnergyLevel): TaskBucket => {
+    switch (energy) {
+      case 'very-low':
+      case 'low':
+        return 'admin-mode';
+      case 'moderate':
+        return 'medium-energy';
+      case 'high':
+        return 'heavy-energy';
+      default:
+        return 'medium-energy';
+    }
+  };
+
   const addTask = async () => {
     if (!newTaskTitle.trim()) return;
 
@@ -52,6 +72,7 @@ export default function TasksScreen() {
       energyCost: newTaskEnergy,
       priority: newTaskPriority,
       category: newTaskCategory,
+      bucket: newTaskBucket,
       completed: false,
       date: today,
     };
@@ -60,9 +81,10 @@ export default function TasksScreen() {
     setTasks([...tasks, newTask]);
     
     setNewTaskTitle('');
-    setNewTaskEnergy('medium');
+    setNewTaskEnergy('moderate');
     setNewTaskPriority('can-wait');
     setNewTaskCategory('general');
+    setNewTaskBucket('medium-energy');
     setShowAddModal(false);
   };
 
@@ -82,15 +104,28 @@ export default function TasksScreen() {
   };
 
   const getFilteredTasks = () => {
-    if (!todayEnergy) return tasks;
+    let filtered = tasks;
 
-    const energyOrder = { low: 1, medium: 2, high: 3 };
-    const userEnergyLevel = energyOrder[todayEnergy];
+    if (filterByEnergy && todayEnergy) {
+      const energyOrder: Record<EnergyLevel, number> = { 
+        'very-low': 1, 
+        'low': 2, 
+        'moderate': 3, 
+        'high': 4 
+      };
+      const userEnergyLevel = energyOrder[todayEnergy];
 
-    return tasks.filter(task => {
-      const taskEnergyLevel = energyOrder[task.energyCost];
-      return taskEnergyLevel <= userEnergyLevel;
-    });
+      filtered = filtered.filter(task => {
+        const taskEnergyLevel = energyOrder[task.energyCost];
+        return taskEnergyLevel <= userEnergyLevel;
+      });
+    }
+
+    if (selectedBucketFilter !== 'all') {
+      filtered = filtered.filter(task => task.bucket === selectedBucketFilter);
+    }
+
+    return filtered;
   };
 
   const filteredTasks = getFilteredTasks();
@@ -100,8 +135,9 @@ export default function TasksScreen() {
 
   const getEnergyColor = (energy: EnergyLevel) => {
     switch (energy) {
+      case 'very-low': return colors.energyLow;
       case 'low': return colors.energyLow;
-      case 'medium': return colors.energyMedium;
+      case 'moderate': return colors.energyMedium;
       case 'high': return colors.energyHigh;
     }
   };
@@ -114,6 +150,17 @@ export default function TasksScreen() {
     }
   };
 
+  const getBucketLabel = (bucket: TaskBucket) => {
+    switch (bucket) {
+      case 'admin-mode': return 'Admin Mode';
+      case 'medium-energy': return 'Medium Energy';
+      case 'heavy-energy': return 'Heavy Energy';
+      case 'for-others': return 'For Others';
+      case 'for-my-home': return 'For My Home';
+      case 'for-myself': return 'For Myself';
+    }
+  };
+
   const getCategoryIcon = (category: TaskCategory) => {
     switch (category) {
       case 'kid-related': return 'child_care';
@@ -123,32 +170,312 @@ export default function TasksScreen() {
     }
   };
 
+  const bucketOptions: { bucket: TaskBucket; label: string }[] = [
+    { bucket: 'admin-mode', label: 'Admin Mode' },
+    { bucket: 'medium-energy', label: 'Medium Energy' },
+    { bucket: 'heavy-energy', label: 'Heavy Energy' },
+    { bucket: 'for-others', label: 'For Others' },
+    { bucket: 'for-my-home', label: 'For My Home' },
+    { bucket: 'for-myself', label: 'For Myself' },
+  ];
+
+  const dynamicStyles = StyleSheet.create({
+    container: {
+      flex: 1,
+      backgroundColor: isDark ? colors.darkBackground : colors.background,
+    },
+    title: {
+      fontSize: 32,
+      fontWeight: '700',
+      color: isDark ? colors.darkText : colors.text,
+      marginBottom: 8,
+    },
+    energyBadge: {
+      backgroundColor: isDark ? colors.darkHighlight : colors.highlight,
+      paddingHorizontal: 12,
+      paddingVertical: 6,
+      borderRadius: 12,
+      alignSelf: 'flex-start',
+      marginBottom: 8,
+    },
+    energyBadgeText: {
+      fontSize: 14,
+      color: isDark ? colors.darkText : colors.text,
+      fontWeight: '500',
+      textTransform: 'capitalize',
+    },
+    reminderText: {
+      fontSize: 14,
+      color: isDark ? colors.darkTextSecondary : colors.textSecondary,
+      fontStyle: 'italic',
+    },
+    filterContainer: {
+      flexDirection: 'row',
+      gap: 10,
+      marginBottom: 16,
+      flexWrap: 'wrap',
+    },
+    filterButton: {
+      backgroundColor: isDark ? colors.darkCard : colors.card,
+      paddingHorizontal: 16,
+      paddingVertical: 10,
+      borderRadius: 20,
+      borderWidth: 1,
+      borderColor: isDark ? colors.darkAccent : colors.accent,
+    },
+    filterButtonActive: {
+      backgroundColor: isDark ? colors.darkPrimary : colors.primary,
+      borderColor: isDark ? colors.darkPrimary : colors.primary,
+    },
+    filterButtonText: {
+      fontSize: 13,
+      color: isDark ? colors.darkText : colors.text,
+      fontWeight: '500',
+    },
+    filterButtonTextActive: {
+      color: isDark ? colors.darkBackground : colors.card,
+      fontWeight: '600',
+    },
+    sectionTitle: {
+      fontSize: 20,
+      fontWeight: '600',
+      color: isDark ? colors.darkText : colors.text,
+      marginBottom: 12,
+    },
+    taskCard: {
+      backgroundColor: isDark ? colors.darkCard : colors.card,
+      borderRadius: 12,
+      padding: 16,
+      marginBottom: 12,
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 12,
+    },
+    taskCardCompleted: {
+      opacity: 0.6,
+    },
+    taskTitle: {
+      fontSize: 16,
+      fontWeight: '500',
+      color: isDark ? colors.darkText : colors.text,
+      marginBottom: 6,
+    },
+    taskTitleCompleted: {
+      textDecorationLine: 'line-through',
+      color: isDark ? colors.darkTextSecondary : colors.textSecondary,
+    },
+    energyBadgeSmall: {
+      paddingHorizontal: 8,
+      paddingVertical: 3,
+      borderRadius: 8,
+    },
+    priorityBadge: {
+      backgroundColor: isDark ? colors.darkSecondary : colors.secondary,
+      paddingHorizontal: 8,
+      paddingVertical: 3,
+      borderRadius: 8,
+    },
+    bucketBadge: {
+      backgroundColor: isDark ? colors.darkAccent : colors.accent,
+      paddingHorizontal: 8,
+      paddingVertical: 3,
+      borderRadius: 8,
+    },
+    badgeText: {
+      fontSize: 11,
+      color: isDark ? colors.darkText : colors.text,
+      fontWeight: '500',
+      textTransform: 'capitalize',
+    },
+    emptyText: {
+      fontSize: 20,
+      fontWeight: '600',
+      color: isDark ? colors.darkText : colors.text,
+      marginTop: 16,
+    },
+    emptySubtext: {
+      fontSize: 14,
+      color: isDark ? colors.darkTextSecondary : colors.textSecondary,
+      marginTop: 8,
+    },
+    addButton: {
+      position: 'absolute',
+      bottom: 100,
+      right: 20,
+      width: 60,
+      height: 60,
+      borderRadius: 30,
+      backgroundColor: isDark ? colors.darkPrimary : colors.primary,
+      alignItems: 'center',
+      justifyContent: 'center',
+      boxShadow: '0px 4px 12px rgba(0, 0, 0, 0.15)',
+      elevation: 5,
+    },
+    modalOverlay: {
+      flex: 1,
+      backgroundColor: 'rgba(0, 0, 0, 0.5)',
+      justifyContent: 'flex-end',
+    },
+    modalContent: {
+      backgroundColor: isDark ? colors.darkCard : colors.card,
+      borderTopLeftRadius: 24,
+      borderTopRightRadius: 24,
+      padding: 24,
+      maxHeight: '80%',
+    },
+    modalTitle: {
+      fontSize: 24,
+      fontWeight: '700',
+      color: isDark ? colors.darkText : colors.text,
+    },
+    input: {
+      backgroundColor: isDark ? colors.darkBackground : colors.background,
+      borderRadius: 12,
+      padding: 16,
+      fontSize: 16,
+      color: isDark ? colors.darkText : colors.text,
+      marginBottom: 20,
+    },
+    modalLabel: {
+      fontSize: 16,
+      fontWeight: '600',
+      color: isDark ? colors.darkText : colors.text,
+      marginBottom: 12,
+    },
+    optionButton: {
+      flex: 1,
+      backgroundColor: isDark ? colors.darkBackground : colors.background,
+      padding: 12,
+      borderRadius: 10,
+      alignItems: 'center',
+    },
+    categoryButton: {
+      flex: 1,
+      backgroundColor: isDark ? colors.darkBackground : colors.background,
+      padding: 12,
+      borderRadius: 10,
+      alignItems: 'center',
+    },
+    bucketButton: {
+      backgroundColor: isDark ? colors.darkBackground : colors.background,
+      padding: 12,
+      borderRadius: 10,
+      alignItems: 'center',
+      marginBottom: 10,
+    },
+    optionText: {
+      fontSize: 13,
+      color: isDark ? colors.darkText : colors.text,
+      fontWeight: '500',
+      textTransform: 'capitalize',
+    },
+    optionTextSelected: {
+      color: isDark ? colors.darkBackground : colors.card,
+      fontWeight: '600',
+    },
+    addTaskButton: {
+      backgroundColor: isDark ? colors.darkPrimary : colors.primary,
+      padding: 16,
+      borderRadius: 12,
+      alignItems: 'center',
+      marginTop: 10,
+    },
+    addTaskButtonDisabled: {
+      opacity: 0.5,
+    },
+    addTaskButtonText: {
+      fontSize: 18,
+      fontWeight: '600',
+      color: isDark ? colors.darkBackground : colors.card,
+    },
+  });
+
   return (
-    <View style={styles.container}>
+    <View style={dynamicStyles.container}>
       <ScrollView
         style={styles.scrollView}
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
       >
         <View style={styles.header}>
-          <Text style={styles.title}>Today&apos;s Tasks</Text>
+          <Text style={dynamicStyles.title}>Today&apos;s Tasks</Text>
           {todayEnergy && (
-            <View style={styles.energyBadge}>
-              <Text style={styles.energyBadgeText}>
-                Your energy: {todayEnergy}
+            <View style={dynamicStyles.energyBadge}>
+              <Text style={dynamicStyles.energyBadgeText}>
+                Your energy: {energyLevelLabels[todayEnergy]}
               </Text>
             </View>
           )}
           {!todayEnergy && (
-            <Text style={styles.reminderText}>
+            <Text style={dynamicStyles.reminderText}>
               Complete your daily check-in to see personalized task suggestions
             </Text>
           )}
         </View>
 
+        {todayEnergy && (
+          <View style={dynamicStyles.filterContainer}>
+            <TouchableOpacity
+              style={[
+                dynamicStyles.filterButton,
+                filterByEnergy && dynamicStyles.filterButtonActive,
+              ]}
+              onPress={() => setFilterByEnergy(!filterByEnergy)}
+            >
+              <Text
+                style={[
+                  dynamicStyles.filterButtonText,
+                  filterByEnergy && dynamicStyles.filterButtonTextActive,
+                ]}
+              >
+                Filter by My Energy
+              </Text>
+            </TouchableOpacity>
+          </View>
+        )}
+
+        <View style={dynamicStyles.filterContainer}>
+          <TouchableOpacity
+            style={[
+              dynamicStyles.filterButton,
+              selectedBucketFilter === 'all' && dynamicStyles.filterButtonActive,
+            ]}
+            onPress={() => setSelectedBucketFilter('all')}
+          >
+            <Text
+              style={[
+                dynamicStyles.filterButtonText,
+                selectedBucketFilter === 'all' && dynamicStyles.filterButtonTextActive,
+              ]}
+            >
+              All Buckets
+            </Text>
+          </TouchableOpacity>
+          {bucketOptions.map((item, index) => (
+            <React.Fragment key={index}>
+              <TouchableOpacity
+                style={[
+                  dynamicStyles.filterButton,
+                  selectedBucketFilter === item.bucket && dynamicStyles.filterButtonActive,
+                ]}
+                onPress={() => setSelectedBucketFilter(item.bucket)}
+              >
+                <Text
+                  style={[
+                    dynamicStyles.filterButtonText,
+                    selectedBucketFilter === item.bucket && dynamicStyles.filterButtonTextActive,
+                  ]}
+                >
+                  {item.label}
+                </Text>
+              </TouchableOpacity>
+            </React.Fragment>
+          ))}
+        </View>
+
         {mustDoTasks.length > 0 && (
           <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Must Do</Text>
+            <Text style={dynamicStyles.sectionTitle}>Must Do</Text>
             {mustDoTasks.map((task, index) => (
               <React.Fragment key={index}>
                 <TaskItem
@@ -157,7 +484,9 @@ export default function TasksScreen() {
                   onDelete={deleteTask}
                   getEnergyColor={getEnergyColor}
                   getPriorityLabel={getPriorityLabel}
+                  getBucketLabel={getBucketLabel}
                   getCategoryIcon={getCategoryIcon}
+                  isDark={isDark}
                 />
               </React.Fragment>
             ))}
@@ -166,7 +495,7 @@ export default function TasksScreen() {
 
         {otherTasks.length > 0 && (
           <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Other Tasks</Text>
+            <Text style={dynamicStyles.sectionTitle}>Other Tasks</Text>
             {otherTasks.map((task, index) => (
               <React.Fragment key={index}>
                 <TaskItem
@@ -175,7 +504,9 @@ export default function TasksScreen() {
                   onDelete={deleteTask}
                   getEnergyColor={getEnergyColor}
                   getPriorityLabel={getPriorityLabel}
+                  getBucketLabel={getBucketLabel}
                   getCategoryIcon={getCategoryIcon}
+                  isDark={isDark}
                 />
               </React.Fragment>
             ))}
@@ -184,7 +515,7 @@ export default function TasksScreen() {
 
         {completedTasks.length > 0 && (
           <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Completed</Text>
+            <Text style={dynamicStyles.sectionTitle}>Completed</Text>
             {completedTasks.map((task, index) => (
               <React.Fragment key={index}>
                 <TaskItem
@@ -193,38 +524,40 @@ export default function TasksScreen() {
                   onDelete={deleteTask}
                   getEnergyColor={getEnergyColor}
                   getPriorityLabel={getPriorityLabel}
+                  getBucketLabel={getBucketLabel}
                   getCategoryIcon={getCategoryIcon}
+                  isDark={isDark}
                 />
               </React.Fragment>
             ))}
           </View>
         )}
 
-        {tasks.length === 0 && (
+        {filteredTasks.length === 0 && (
           <View style={styles.emptyState}>
             <IconSymbol
               ios_icon_name="checkmark.circle"
               android_material_icon_name="check_circle_outline"
               size={64}
-              color={colors.textSecondary}
+              color={isDark ? colors.darkTextSecondary : colors.textSecondary}
             />
-            <Text style={styles.emptyText}>No tasks for today</Text>
-            <Text style={styles.emptySubtext}>
-              Add a task to get started
+            <Text style={dynamicStyles.emptyText}>No tasks match your filters</Text>
+            <Text style={dynamicStyles.emptySubtext}>
+              {filterByEnergy ? 'Try adjusting your filters or add a new task' : 'Add a task to get started'}
             </Text>
           </View>
         )}
       </ScrollView>
 
       <TouchableOpacity
-        style={styles.addButton}
+        style={dynamicStyles.addButton}
         onPress={() => setShowAddModal(true)}
       >
         <IconSymbol
           ios_icon_name="plus"
           android_material_icon_name="add"
           size={28}
-          color={colors.card}
+          color={isDark ? colors.darkBackground : colors.card}
         />
       </TouchableOpacity>
 
@@ -234,67 +567,94 @@ export default function TasksScreen() {
         transparent={true}
         onRequestClose={() => setShowAddModal(false)}
       >
-        <View style={styles.modalOverlay}>
-          <View style={styles.modalContent}>
+        <View style={dynamicStyles.modalOverlay}>
+          <ScrollView style={dynamicStyles.modalContent}>
             <View style={styles.modalHeader}>
-              <Text style={styles.modalTitle}>Add New Task</Text>
+              <Text style={dynamicStyles.modalTitle}>Add New Task</Text>
               <TouchableOpacity onPress={() => setShowAddModal(false)}>
                 <IconSymbol
                   ios_icon_name="xmark"
                   android_material_icon_name="close"
                   size={24}
-                  color={colors.text}
+                  color={isDark ? colors.darkText : colors.text}
                 />
               </TouchableOpacity>
             </View>
 
             <TextInput
-              style={styles.input}
+              style={dynamicStyles.input}
               placeholder="Task title"
-              placeholderTextColor={colors.textSecondary}
+              placeholderTextColor={isDark ? colors.darkTextSecondary : colors.textSecondary}
               value={newTaskTitle}
               onChangeText={setNewTaskTitle}
             />
 
-            <Text style={styles.modalLabel}>Energy Cost</Text>
+            <Text style={dynamicStyles.modalLabel}>Energy Demand Level</Text>
             <View style={styles.optionsRow}>
-              {(['low', 'medium', 'high'] as EnergyLevel[]).map((energy, index) => (
+              {(['very-low', 'low', 'moderate', 'high'] as EnergyLevel[]).map((energy, index) => (
                 <React.Fragment key={index}>
                   <TouchableOpacity
                     style={[
-                      styles.optionButton,
+                      dynamicStyles.optionButton,
                       newTaskEnergy === energy && { backgroundColor: getEnergyColor(energy) },
                     ]}
-                    onPress={() => setNewTaskEnergy(energy)}
+                    onPress={() => {
+                      setNewTaskEnergy(energy);
+                      setNewTaskBucket(getBucketFromEnergy(energy));
+                    }}
                   >
                     <Text
                       style={[
-                        styles.optionText,
-                        newTaskEnergy === energy && styles.optionTextSelected,
+                        dynamicStyles.optionText,
+                        newTaskEnergy === energy && dynamicStyles.optionTextSelected,
                       ]}
                     >
-                      {energy}
+                      {energyLevelLabels[energy]}
                     </Text>
                   </TouchableOpacity>
                 </React.Fragment>
               ))}
             </View>
 
-            <Text style={styles.modalLabel}>Priority</Text>
+            <Text style={dynamicStyles.modalLabel}>Task Bucket (Auto-assigned)</Text>
+            <View style={styles.bucketGrid}>
+              {bucketOptions.map((item, index) => (
+                <React.Fragment key={index}>
+                  <TouchableOpacity
+                    style={[
+                      dynamicStyles.bucketButton,
+                      newTaskBucket === item.bucket && { backgroundColor: isDark ? colors.darkPrimary : colors.primary },
+                    ]}
+                    onPress={() => setNewTaskBucket(item.bucket)}
+                  >
+                    <Text
+                      style={[
+                        dynamicStyles.optionText,
+                        newTaskBucket === item.bucket && dynamicStyles.optionTextSelected,
+                      ]}
+                    >
+                      {item.label}
+                    </Text>
+                  </TouchableOpacity>
+                </React.Fragment>
+              ))}
+            </View>
+
+            <Text style={dynamicStyles.modalLabel}>Priority</Text>
             <View style={styles.optionsRow}>
               {(['must-do', 'can-wait', 'optional'] as TaskPriority[]).map((priority, index) => (
                 <React.Fragment key={index}>
                   <TouchableOpacity
                     style={[
-                      styles.optionButton,
-                      newTaskPriority === priority && { backgroundColor: colors.primary },
+                      dynamicStyles.optionButton,
+                      newTaskPriority === priority && { backgroundColor: isDark ? colors.darkPrimary : colors.primary },
                     ]}
                     onPress={() => setNewTaskPriority(priority)}
                   >
                     <Text
                       style={[
-                        styles.optionText,
-                        newTaskPriority === priority && styles.optionTextSelected,
+                        dynamicStyles.optionText,
+                        newTaskPriority === priority && dynamicStyles.optionTextSelected,
                       ]}
                     >
                       {getPriorityLabel(priority)}
@@ -304,21 +664,21 @@ export default function TasksScreen() {
               ))}
             </View>
 
-            <Text style={styles.modalLabel}>Category</Text>
+            <Text style={dynamicStyles.modalLabel}>Category</Text>
             <View style={styles.optionsRow}>
               {(['general', 'kid-related', 'work', 'self'] as TaskCategory[]).map((category, index) => (
                 <React.Fragment key={index}>
                   <TouchableOpacity
                     style={[
-                      styles.categoryButton,
-                      newTaskCategory === category && { backgroundColor: colors.accent },
+                      dynamicStyles.categoryButton,
+                      newTaskCategory === category && { backgroundColor: isDark ? colors.darkAccent : colors.accent },
                     ]}
                     onPress={() => setNewTaskCategory(category)}
                   >
                     <Text
                       style={[
-                        styles.optionText,
-                        newTaskCategory === category && styles.optionTextSelected,
+                        dynamicStyles.optionText,
+                        newTaskCategory === category && dynamicStyles.optionTextSelected,
                       ]}
                     >
                       {category}
@@ -329,13 +689,13 @@ export default function TasksScreen() {
             </View>
 
             <TouchableOpacity
-              style={[styles.addTaskButton, !newTaskTitle.trim() && styles.addTaskButtonDisabled]}
+              style={[dynamicStyles.addTaskButton, !newTaskTitle.trim() && dynamicStyles.addTaskButtonDisabled]}
               onPress={addTask}
               disabled={!newTaskTitle.trim()}
             >
-              <Text style={styles.addTaskButtonText}>Add Task</Text>
+              <Text style={dynamicStyles.addTaskButtonText}>Add Task</Text>
             </TouchableOpacity>
-          </View>
+          </ScrollView>
         </View>
       </Modal>
     </View>
@@ -348,12 +708,62 @@ interface TaskItemProps {
   onDelete: (id: string) => void;
   getEnergyColor: (energy: EnergyLevel) => string;
   getPriorityLabel: (priority: TaskPriority) => string;
+  getBucketLabel: (bucket: TaskBucket) => string;
   getCategoryIcon: (category: TaskCategory) => string;
+  isDark: boolean;
 }
 
-function TaskItem({ task, onToggle, onDelete, getEnergyColor, getPriorityLabel, getCategoryIcon }: TaskItemProps) {
+function TaskItem({ task, onToggle, onDelete, getEnergyColor, getPriorityLabel, getBucketLabel, getCategoryIcon, isDark }: TaskItemProps) {
+  const dynamicStyles = StyleSheet.create({
+    taskCard: {
+      backgroundColor: isDark ? colors.darkCard : colors.card,
+      borderRadius: 12,
+      padding: 16,
+      marginBottom: 12,
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 12,
+    },
+    taskCardCompleted: {
+      opacity: 0.6,
+    },
+    taskTitle: {
+      fontSize: 16,
+      fontWeight: '500',
+      color: isDark ? colors.darkText : colors.text,
+      marginBottom: 6,
+    },
+    taskTitleCompleted: {
+      textDecorationLine: 'line-through',
+      color: isDark ? colors.darkTextSecondary : colors.textSecondary,
+    },
+    energyBadgeSmall: {
+      paddingHorizontal: 8,
+      paddingVertical: 3,
+      borderRadius: 8,
+    },
+    priorityBadge: {
+      backgroundColor: isDark ? colors.darkSecondary : colors.secondary,
+      paddingHorizontal: 8,
+      paddingVertical: 3,
+      borderRadius: 8,
+    },
+    bucketBadge: {
+      backgroundColor: isDark ? colors.darkAccent : colors.accent,
+      paddingHorizontal: 8,
+      paddingVertical: 3,
+      borderRadius: 8,
+    },
+    badgeText: {
+      fontSize: 11,
+      color: isDark ? colors.darkText : colors.text,
+      fontWeight: '500',
+      textTransform: 'capitalize',
+    },
+  });
+
   return (
-    <View style={[styles.taskCard, task.completed && styles.taskCardCompleted]}>
+    <View style={[dynamicStyles.taskCard, task.completed && dynamicStyles.taskCardCompleted]}>
       <TouchableOpacity
         style={styles.taskCheckbox}
         onPress={() => onToggle(task.id)}
@@ -362,26 +772,29 @@ function TaskItem({ task, onToggle, onDelete, getEnergyColor, getPriorityLabel, 
           ios_icon_name={task.completed ? "checkmark.circle.fill" : "circle"}
           android_material_icon_name={task.completed ? "check_circle" : "radio_button_unchecked"}
           size={28}
-          color={task.completed ? colors.primary : colors.textSecondary}
+          color={task.completed ? (isDark ? colors.darkPrimary : colors.primary) : (isDark ? colors.darkTextSecondary : colors.textSecondary)}
         />
       </TouchableOpacity>
 
       <View style={styles.taskContent}>
-        <Text style={[styles.taskTitle, task.completed && styles.taskTitleCompleted]}>
+        <Text style={[dynamicStyles.taskTitle, task.completed && dynamicStyles.taskTitleCompleted]}>
           {task.title}
         </Text>
         <View style={styles.taskMeta}>
-          <View style={[styles.energyBadgeSmall, { backgroundColor: getEnergyColor(task.energyCost) }]}>
-            <Text style={styles.badgeText}>{task.energyCost}</Text>
+          <View style={[dynamicStyles.energyBadgeSmall, { backgroundColor: getEnergyColor(task.energyCost) }]}>
+            <Text style={dynamicStyles.badgeText}>{energyLevelLabels[task.energyCost]}</Text>
           </View>
-          <View style={styles.priorityBadge}>
-            <Text style={styles.badgeText}>{getPriorityLabel(task.priority)}</Text>
+          <View style={dynamicStyles.priorityBadge}>
+            <Text style={dynamicStyles.badgeText}>{getPriorityLabel(task.priority)}</Text>
+          </View>
+          <View style={dynamicStyles.bucketBadge}>
+            <Text style={dynamicStyles.badgeText}>{getBucketLabel(task.bucket)}</Text>
           </View>
           <IconSymbol
             ios_icon_name="tag"
             android_material_icon_name={getCategoryIcon(task.category)}
             size={16}
-            color={colors.textSecondary}
+            color={isDark ? colors.darkTextSecondary : colors.textSecondary}
           />
         </View>
       </View>
@@ -394,7 +807,7 @@ function TaskItem({ task, onToggle, onDelete, getEnergyColor, getPriorityLabel, 
           ios_icon_name="trash"
           android_material_icon_name="delete"
           size={20}
-          color={colors.textSecondary}
+          color={isDark ? colors.darkTextSecondary : colors.textSecondary}
         />
       </TouchableOpacity>
     </View>
@@ -402,10 +815,6 @@ function TaskItem({ task, onToggle, onDelete, getEnergyColor, getPriorityLabel, 
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: colors.background,
-  },
   scrollView: {
     flex: 1,
   },
@@ -417,50 +826,8 @@ const styles = StyleSheet.create({
   header: {
     marginBottom: 24,
   },
-  title: {
-    fontSize: 32,
-    fontWeight: '700',
-    color: colors.text,
-    marginBottom: 8,
-  },
-  energyBadge: {
-    backgroundColor: colors.highlight,
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 12,
-    alignSelf: 'flex-start',
-  },
-  energyBadgeText: {
-    fontSize: 14,
-    color: colors.text,
-    fontWeight: '500',
-    textTransform: 'capitalize',
-  },
-  reminderText: {
-    fontSize: 14,
-    color: colors.textSecondary,
-    fontStyle: 'italic',
-  },
   section: {
     marginBottom: 24,
-  },
-  sectionTitle: {
-    fontSize: 20,
-    fontWeight: '600',
-    color: colors.text,
-    marginBottom: 12,
-  },
-  taskCard: {
-    backgroundColor: colors.card,
-    borderRadius: 12,
-    padding: 16,
-    marginBottom: 12,
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
-  },
-  taskCardCompleted: {
-    opacity: 0.6,
   },
   taskCheckbox: {
     padding: 4,
@@ -468,37 +835,11 @@ const styles = StyleSheet.create({
   taskContent: {
     flex: 1,
   },
-  taskTitle: {
-    fontSize: 16,
-    fontWeight: '500',
-    color: colors.text,
-    marginBottom: 6,
-  },
-  taskTitleCompleted: {
-    textDecorationLine: 'line-through',
-    color: colors.textSecondary,
-  },
   taskMeta: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 8,
-  },
-  energyBadgeSmall: {
-    paddingHorizontal: 8,
-    paddingVertical: 3,
-    borderRadius: 8,
-  },
-  priorityBadge: {
-    backgroundColor: colors.secondary,
-    paddingHorizontal: 8,
-    paddingVertical: 3,
-    borderRadius: 8,
-  },
-  badgeText: {
-    fontSize: 11,
-    color: colors.text,
-    fontWeight: '500',
-    textTransform: 'capitalize',
+    flexWrap: 'wrap',
   },
   deleteButton: {
     padding: 8,
@@ -508,109 +849,21 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     paddingVertical: 60,
   },
-  emptyText: {
-    fontSize: 20,
-    fontWeight: '600',
-    color: colors.text,
-    marginTop: 16,
-  },
-  emptySubtext: {
-    fontSize: 14,
-    color: colors.textSecondary,
-    marginTop: 8,
-  },
-  addButton: {
-    position: 'absolute',
-    bottom: 100,
-    right: 20,
-    width: 60,
-    height: 60,
-    borderRadius: 30,
-    backgroundColor: colors.primary,
-    alignItems: 'center',
-    justifyContent: 'center',
-    boxShadow: '0px 4px 12px rgba(0, 0, 0, 0.15)',
-    elevation: 5,
-  },
-  modalOverlay: {
-    flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
-    justifyContent: 'flex-end',
-  },
-  modalContent: {
-    backgroundColor: colors.card,
-    borderTopLeftRadius: 24,
-    borderTopRightRadius: 24,
-    padding: 24,
-    maxHeight: '80%',
-  },
   modalHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
     marginBottom: 24,
   },
-  modalTitle: {
-    fontSize: 24,
-    fontWeight: '700',
-    color: colors.text,
-  },
-  input: {
-    backgroundColor: colors.background,
-    borderRadius: 12,
-    padding: 16,
-    fontSize: 16,
-    color: colors.text,
-    marginBottom: 20,
-  },
-  modalLabel: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: colors.text,
-    marginBottom: 12,
-  },
   optionsRow: {
     flexDirection: 'row',
+    flexWrap: 'wrap',
     gap: 10,
     marginBottom: 20,
   },
-  optionButton: {
-    flex: 1,
-    backgroundColor: colors.background,
-    padding: 12,
-    borderRadius: 10,
-    alignItems: 'center',
-  },
-  categoryButton: {
-    flex: 1,
-    backgroundColor: colors.background,
-    padding: 12,
-    borderRadius: 10,
-    alignItems: 'center',
-  },
-  optionText: {
-    fontSize: 13,
-    color: colors.text,
-    fontWeight: '500',
-    textTransform: 'capitalize',
-  },
-  optionTextSelected: {
-    color: colors.card,
-    fontWeight: '600',
-  },
-  addTaskButton: {
-    backgroundColor: colors.primary,
-    padding: 16,
-    borderRadius: 12,
-    alignItems: 'center',
-    marginTop: 10,
-  },
-  addTaskButtonDisabled: {
-    opacity: 0.5,
-  },
-  addTaskButtonText: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: colors.card,
+  bucketGrid: {
+    flexDirection: 'column',
+    gap: 10,
+    marginBottom: 20,
   },
 });
