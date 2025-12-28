@@ -146,6 +146,7 @@ export const storageUtils = {
         { id: '2', type: 'medication', title: 'Take medication', enabled: true },
         { id: '3', type: 'rest', title: 'Rest break', enabled: true },
         { id: '4', type: 'breathing', title: 'Breathing exercise', enabled: true },
+        { id: '5', type: 'movement', title: 'Gentle movement', enabled: true },
       ];
       
       await AsyncStorage.setItem(KEYS.REMINDERS, JSON.stringify(defaultReminders));

@@ -54,6 +54,7 @@ export default function ProfileScreen() {
       case 'medication': return 'medication';
       case 'rest': return 'bedtime';
       case 'breathing': return 'air';
+      case 'movement': return 'directions_walk';
     }
   };
 
