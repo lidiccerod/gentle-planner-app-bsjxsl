@@ -17,7 +17,7 @@ export type Mood = 'calm' | 'overwhelmed' | 'hopeful' | 'tired' | 'anxious' | 'c
 
 export type TaskPriority = 'optional' | 'must-do' | 'can-wait';
 
-export type TaskCategory = 'kid-related' | 'work' | 'self' | 'general';
+export type TaskCategory = 'kid-related' | 'work' | 'self' | 'general' | string;
 
 export type TaskBucket = 
   | 'admin-mode'      // Low Energy
@@ -44,6 +44,7 @@ export interface Task {
   bucket: TaskBucket;
   completed: boolean;
   date: string;
+  dueDate?: string;
   notes?: string;
 }
 
@@ -68,3 +69,5 @@ export const energyLevelLabels: Record<EnergyLevel, string> = {
   'moderate': 'Moderate',
   'high': 'High',
 };
+
+export const defaultCategories: TaskCategory[] = ['general', 'kid-related', 'work', 'self'];

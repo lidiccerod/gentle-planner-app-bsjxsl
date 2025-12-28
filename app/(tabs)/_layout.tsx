@@ -19,9 +19,15 @@ export default function TabLayout() {
       label: 'Tasks',
     },
     {
+      name: 'calendar',
+      route: '/(tabs)/calendar',
+      icon: 'calendar_month',
+      label: 'Calendar',
+    },
+    {
       name: 'weekly',
       route: '/(tabs)/weekly',
-      icon: 'calendar_month',
+      icon: 'insights',
       label: 'Weekly',
     },
     {
@@ -42,6 +48,7 @@ export default function TabLayout() {
       >
         <Stack.Screen key="home" name="(home)" />
         <Stack.Screen key="tasks" name="tasks" />
+        <Stack.Screen key="calendar" name="calendar" />
         <Stack.Screen key="weekly" name="weekly" />
         <Stack.Screen key="profile" name="profile" />
       </Stack>

@@ -11,6 +11,7 @@ import {
   Platform,
   useColorScheme,
 } from 'react-native';
+import DateTimePicker from '@react-native-community/datetimepicker';
 import { colors } from '@/styles/commonStyles';
 import { IconSymbol } from '@/components/IconSymbol';
 import { storageUtils } from '@/utils/storage';
@@ -26,13 +27,19 @@ export default function TasksScreen() {
   const [newTaskPriority, setNewTaskPriority] = useState<TaskPriority>('can-wait');
   const [newTaskCategory, setNewTaskCategory] = useState<TaskCategory>('general');
   const [newTaskBucket, setNewTaskBucket] = useState<TaskBucket>('medium-energy');
+  const [newTaskDueDate, setNewTaskDueDate] = useState<Date | undefined>(undefined);
+  const [showDatePicker, setShowDatePicker] = useState(false);
   const [todayEnergy, setTodayEnergy] = useState<EnergyLevel | null>(null);
   const [filterByEnergy, setFilterByEnergy] = useState(false);
   const [selectedBucketFilter, setSelectedBucketFilter] = useState<TaskBucket | 'all'>('all');
+  const [allCategories, setAllCategories] = useState<TaskCategory[]>([]);
+  const [showAddCategory, setShowAddCategory] = useState(false);
+  const [newCategoryName, setNewCategoryName] = useState('');
 
   useEffect(() => {
     loadTasks();
     loadTodayEnergy();
+    loadCategories();
   }, []);
 
   const loadTasks = async () => {
@@ -46,6 +53,11 @@ export default function TasksScreen() {
     if (checkIn) {
       setTodayEnergy(checkIn.energyLevel);
     }
+  };
+
+  const loadCategories = async () => {
+    const categories = await storageUtils.getAllCategories();
+    setAllCategories(categories);
   };
 
   const getBucketFromEnergy = (energy: EnergyLevel): TaskBucket => {
@@ -75,6 +87,7 @@ export default function TasksScreen() {
       bucket: newTaskBucket,
       completed: false,
       date: today,
+      dueDate: newTaskDueDate ? newTaskDueDate.toISOString().split('T')[0] : undefined,
     };
 
     await storageUtils.addTask(newTask);
@@ -85,7 +98,18 @@ export default function TasksScreen() {
     setNewTaskPriority('can-wait');
     setNewTaskCategory('general');
     setNewTaskBucket('medium-energy');
+    setNewTaskDueDate(undefined);
     setShowAddModal(false);
+  };
+
+  const addCustomCategory = async () => {
+    if (!newCategoryName.trim()) return;
+    
+    await storageUtils.addCustomCategory(newCategoryName.trim());
+    await loadCategories();
+    setNewTaskCategory(newCategoryName.trim());
+    setNewCategoryName('');
+    setShowAddCategory(false);
   };
 
   const toggleTaskComplete = async (taskId: string) => {
@@ -150,26 +174,6 @@ export default function TasksScreen() {
     }
   };
 
-  const getBucketLabel = (bucket: TaskBucket) => {
-    switch (bucket) {
-      case 'admin-mode': return 'Admin Mode';
-      case 'medium-energy': return 'Medium Energy';
-      case 'heavy-energy': return 'Heavy Energy';
-      case 'for-others': return 'For Others';
-      case 'for-my-home': return 'For My Home';
-      case 'for-myself': return 'For Myself';
-    }
-  };
-
-  const getCategoryIcon = (category: TaskCategory) => {
-    switch (category) {
-      case 'kid-related': return 'child_care';
-      case 'work': return 'work';
-      case 'self': return 'self_improvement';
-      default: return 'task_alt';
-    }
-  };
-
   const bucketOptions: { bucket: TaskBucket; label: string }[] = [
     { bucket: 'admin-mode', label: 'Admin Mode' },
     { bucket: 'medium-energy', label: 'Medium Energy' },
@@ -178,6 +182,11 @@ export default function TasksScreen() {
     { bucket: 'for-my-home', label: 'For My Home' },
     { bucket: 'for-myself', label: 'For Myself' },
   ];
+
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString);
+    return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+  };
 
   const dynamicStyles = StyleSheet.create({
     container: {
@@ -269,18 +278,6 @@ export default function TasksScreen() {
       paddingVertical: 3,
       borderRadius: 8,
     },
-    priorityBadge: {
-      backgroundColor: isDark ? colors.darkSecondary : colors.secondary,
-      paddingHorizontal: 8,
-      paddingVertical: 3,
-      borderRadius: 8,
-    },
-    bucketBadge: {
-      backgroundColor: isDark ? colors.darkAccent : colors.accent,
-      paddingHorizontal: 8,
-      paddingVertical: 3,
-      borderRadius: 8,
-    },
     badgeText: {
       fontSize: 11,
       color: isDark ? colors.darkText : colors.text,
@@ -348,20 +345,17 @@ export default function TasksScreen() {
       padding: 12,
       borderRadius: 10,
       alignItems: 'center',
+      minWidth: 80,
     },
     categoryButton: {
-      flex: 1,
       backgroundColor: isDark ? colors.darkBackground : colors.background,
       padding: 12,
       borderRadius: 10,
       alignItems: 'center',
-    },
-    bucketButton: {
-      backgroundColor: isDark ? colors.darkBackground : colors.background,
-      padding: 12,
-      borderRadius: 10,
-      alignItems: 'center',
-      marginBottom: 10,
+      marginBottom: 8,
+      flexDirection: 'row',
+      justifyContent: 'center',
+      gap: 8,
     },
     optionText: {
       fontSize: 13,
@@ -387,6 +381,31 @@ export default function TasksScreen() {
       fontSize: 18,
       fontWeight: '600',
       color: isDark ? colors.darkBackground : colors.card,
+    },
+    dueDateButton: {
+      backgroundColor: isDark ? colors.darkBackground : colors.background,
+      padding: 16,
+      borderRadius: 12,
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      marginBottom: 20,
+    },
+    dueDateText: {
+      fontSize: 16,
+      color: isDark ? colors.darkText : colors.text,
+      fontWeight: '500',
+    },
+    dueDatePlaceholder: {
+      fontSize: 16,
+      color: isDark ? colors.darkTextSecondary : colors.textSecondary,
+    },
+    dueDateBadge: {
+      backgroundColor: isDark ? colors.darkSecondary : colors.secondary,
+      paddingHorizontal: 8,
+      paddingVertical: 3,
+      borderRadius: 8,
+      marginLeft: 8,
     },
   });
 
@@ -484,8 +503,7 @@ export default function TasksScreen() {
                   onDelete={deleteTask}
                   getEnergyColor={getEnergyColor}
                   getPriorityLabel={getPriorityLabel}
-                  getBucketLabel={getBucketLabel}
-                  getCategoryIcon={getCategoryIcon}
+                  formatDate={formatDate}
                   isDark={isDark}
                 />
               </React.Fragment>
@@ -504,8 +522,7 @@ export default function TasksScreen() {
                   onDelete={deleteTask}
                   getEnergyColor={getEnergyColor}
                   getPriorityLabel={getPriorityLabel}
-                  getBucketLabel={getBucketLabel}
-                  getCategoryIcon={getCategoryIcon}
+                  formatDate={formatDate}
                   isDark={isDark}
                 />
               </React.Fragment>
@@ -524,8 +541,7 @@ export default function TasksScreen() {
                   onDelete={deleteTask}
                   getEnergyColor={getEnergyColor}
                   getPriorityLabel={getPriorityLabel}
-                  getBucketLabel={getBucketLabel}
-                  getCategoryIcon={getCategoryIcon}
+                  formatDate={formatDate}
                   isDark={isDark}
                 />
               </React.Fragment>
@@ -616,31 +632,7 @@ export default function TasksScreen() {
               ))}
             </View>
 
-            <Text style={dynamicStyles.modalLabel}>Task Bucket (Auto-assigned)</Text>
-            <View style={styles.bucketGrid}>
-              {bucketOptions.map((item, index) => (
-                <React.Fragment key={index}>
-                  <TouchableOpacity
-                    style={[
-                      dynamicStyles.bucketButton,
-                      newTaskBucket === item.bucket && { backgroundColor: isDark ? colors.darkPrimary : colors.primary },
-                    ]}
-                    onPress={() => setNewTaskBucket(item.bucket)}
-                  >
-                    <Text
-                      style={[
-                        dynamicStyles.optionText,
-                        newTaskBucket === item.bucket && dynamicStyles.optionTextSelected,
-                      ]}
-                    >
-                      {item.label}
-                    </Text>
-                  </TouchableOpacity>
-                </React.Fragment>
-              ))}
-            </View>
-
-            <Text style={dynamicStyles.modalLabel}>Priority</Text>
+            <Text style={dynamicStyles.modalLabel}>Priority & Due Date</Text>
             <View style={styles.optionsRow}>
               {(['must-do', 'can-wait', 'optional'] as TaskPriority[]).map((priority, index) => (
                 <React.Fragment key={index}>
@@ -664,9 +656,60 @@ export default function TasksScreen() {
               ))}
             </View>
 
+            <TouchableOpacity
+              style={dynamicStyles.dueDateButton}
+              onPress={() => setShowDatePicker(true)}
+            >
+              {newTaskDueDate ? (
+                <Text style={dynamicStyles.dueDateText}>
+                  Due: {formatDate(newTaskDueDate.toISOString().split('T')[0])}
+                </Text>
+              ) : (
+                <Text style={dynamicStyles.dueDatePlaceholder}>
+                  Set due date (optional)
+                </Text>
+              )}
+              <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                {newTaskDueDate && (
+                  <TouchableOpacity
+                    onPress={() => setNewTaskDueDate(undefined)}
+                    style={{ marginRight: 12 }}
+                  >
+                    <IconSymbol
+                      ios_icon_name="xmark.circle.fill"
+                      android_material_icon_name="cancel"
+                      size={20}
+                      color={isDark ? colors.darkTextSecondary : colors.textSecondary}
+                    />
+                  </TouchableOpacity>
+                )}
+                <IconSymbol
+                  ios_icon_name="calendar"
+                  android_material_icon_name="calendar_today"
+                  size={20}
+                  color={isDark ? colors.darkText : colors.text}
+                />
+              </View>
+            </TouchableOpacity>
+
+            {showDatePicker && (
+              <DateTimePicker
+                value={newTaskDueDate || new Date()}
+                mode="date"
+                display={Platform.OS === 'ios' ? 'spinner' : 'default'}
+                onChange={(event, selectedDate) => {
+                  setShowDatePicker(Platform.OS === 'ios');
+                  if (selectedDate) {
+                    setNewTaskDueDate(selectedDate);
+                  }
+                }}
+                minimumDate={new Date()}
+              />
+            )}
+
             <Text style={dynamicStyles.modalLabel}>Category</Text>
-            <View style={styles.optionsRow}>
-              {(['general', 'kid-related', 'work', 'self'] as TaskCategory[]).map((category, index) => (
+            <ScrollView style={styles.categoryScroll} nestedScrollEnabled>
+              {allCategories.map((category, index) => (
                 <React.Fragment key={index}>
                   <TouchableOpacity
                     style={[
@@ -686,7 +729,21 @@ export default function TasksScreen() {
                   </TouchableOpacity>
                 </React.Fragment>
               ))}
-            </View>
+              <TouchableOpacity
+                style={[dynamicStyles.categoryButton, { borderWidth: 1, borderColor: isDark ? colors.darkPrimary : colors.primary, borderStyle: 'dashed' }]}
+                onPress={() => setShowAddCategory(true)}
+              >
+                <IconSymbol
+                  ios_icon_name="plus.circle"
+                  android_material_icon_name="add_circle_outline"
+                  size={20}
+                  color={isDark ? colors.darkPrimary : colors.primary}
+                />
+                <Text style={[dynamicStyles.optionText, { color: isDark ? colors.darkPrimary : colors.primary }]}>
+                  Add Custom Category
+                </Text>
+              </TouchableOpacity>
+            </ScrollView>
 
             <TouchableOpacity
               style={[dynamicStyles.addTaskButton, !newTaskTitle.trim() && dynamicStyles.addTaskButtonDisabled]}
@@ -696,6 +753,46 @@ export default function TasksScreen() {
               <Text style={dynamicStyles.addTaskButtonText}>Add Task</Text>
             </TouchableOpacity>
           </ScrollView>
+        </View>
+      </Modal>
+
+      <Modal
+        visible={showAddCategory}
+        animationType="fade"
+        transparent={true}
+        onRequestClose={() => setShowAddCategory(false)}
+      >
+        <View style={dynamicStyles.modalOverlay}>
+          <View style={[dynamicStyles.modalContent, { maxHeight: '40%' }]}>
+            <View style={styles.modalHeader}>
+              <Text style={dynamicStyles.modalTitle}>Add Category</Text>
+              <TouchableOpacity onPress={() => setShowAddCategory(false)}>
+                <IconSymbol
+                  ios_icon_name="xmark"
+                  android_material_icon_name="close"
+                  size={24}
+                  color={isDark ? colors.darkText : colors.text}
+                />
+              </TouchableOpacity>
+            </View>
+
+            <TextInput
+              style={dynamicStyles.input}
+              placeholder="Category name"
+              placeholderTextColor={isDark ? colors.darkTextSecondary : colors.textSecondary}
+              value={newCategoryName}
+              onChangeText={setNewCategoryName}
+              autoFocus
+            />
+
+            <TouchableOpacity
+              style={[dynamicStyles.addTaskButton, !newCategoryName.trim() && dynamicStyles.addTaskButtonDisabled]}
+              onPress={addCustomCategory}
+              disabled={!newCategoryName.trim()}
+            >
+              <Text style={dynamicStyles.addTaskButtonText}>Add Category</Text>
+            </TouchableOpacity>
+          </View>
         </View>
       </Modal>
     </View>
@@ -708,12 +805,11 @@ interface TaskItemProps {
   onDelete: (id: string) => void;
   getEnergyColor: (energy: EnergyLevel) => string;
   getPriorityLabel: (priority: TaskPriority) => string;
-  getBucketLabel: (bucket: TaskBucket) => string;
-  getCategoryIcon: (category: TaskCategory) => string;
+  formatDate: (date: string) => string;
   isDark: boolean;
 }
 
-function TaskItem({ task, onToggle, onDelete, getEnergyColor, getPriorityLabel, getBucketLabel, getCategoryIcon, isDark }: TaskItemProps) {
+function TaskItem({ task, onToggle, onDelete, getEnergyColor, getPriorityLabel, formatDate, isDark }: TaskItemProps) {
   const dynamicStyles = StyleSheet.create({
     taskCard: {
       backgroundColor: isDark ? colors.darkCard : colors.card,
@@ -742,23 +838,20 @@ function TaskItem({ task, onToggle, onDelete, getEnergyColor, getPriorityLabel, 
       paddingVertical: 3,
       borderRadius: 8,
     },
-    priorityBadge: {
-      backgroundColor: isDark ? colors.darkSecondary : colors.secondary,
-      paddingHorizontal: 8,
-      paddingVertical: 3,
-      borderRadius: 8,
-    },
-    bucketBadge: {
-      backgroundColor: isDark ? colors.darkAccent : colors.accent,
-      paddingHorizontal: 8,
-      paddingVertical: 3,
-      borderRadius: 8,
-    },
     badgeText: {
       fontSize: 11,
       color: isDark ? colors.darkText : colors.text,
       fontWeight: '500',
       textTransform: 'capitalize',
+    },
+    dueDateBadge: {
+      backgroundColor: isDark ? colors.darkSecondary : colors.secondary,
+      paddingHorizontal: 8,
+      paddingVertical: 3,
+      borderRadius: 8,
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 4,
     },
   });
 
@@ -784,18 +877,17 @@ function TaskItem({ task, onToggle, onDelete, getEnergyColor, getPriorityLabel, 
           <View style={[dynamicStyles.energyBadgeSmall, { backgroundColor: getEnergyColor(task.energyCost) }]}>
             <Text style={dynamicStyles.badgeText}>{energyLevelLabels[task.energyCost]}</Text>
           </View>
-          <View style={dynamicStyles.priorityBadge}>
-            <Text style={dynamicStyles.badgeText}>{getPriorityLabel(task.priority)}</Text>
-          </View>
-          <View style={dynamicStyles.bucketBadge}>
-            <Text style={dynamicStyles.badgeText}>{getBucketLabel(task.bucket)}</Text>
-          </View>
-          <IconSymbol
-            ios_icon_name="tag"
-            android_material_icon_name={getCategoryIcon(task.category)}
-            size={16}
-            color={isDark ? colors.darkTextSecondary : colors.textSecondary}
-          />
+          {task.dueDate && (
+            <View style={dynamicStyles.dueDateBadge}>
+              <IconSymbol
+                ios_icon_name="calendar"
+                android_material_icon_name="calendar_today"
+                size={12}
+                color={isDark ? colors.darkText : colors.text}
+              />
+              <Text style={dynamicStyles.badgeText}>{formatDate(task.dueDate)}</Text>
+            </View>
+          )}
         </View>
       </View>
 
@@ -861,9 +953,8 @@ const styles = StyleSheet.create({
     gap: 10,
     marginBottom: 20,
   },
-  bucketGrid: {
-    flexDirection: 'column',
-    gap: 10,
+  categoryScroll: {
+    maxHeight: 200,
     marginBottom: 20,
   },
 });

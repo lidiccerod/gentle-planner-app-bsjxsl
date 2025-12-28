@@ -1,11 +1,12 @@
 
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { DailyCheckIn, Task, SelfCareReminder } from '@/types';
+import { DailyCheckIn, Task, SelfCareReminder, TaskCategory, defaultCategories } from '@/types';
 
 const KEYS = {
   CHECK_INS: '@check_ins',
   TASKS: '@tasks',
   REMINDERS: '@reminders',
+  CUSTOM_CATEGORIES: '@custom_categories',
 };
 
 export const storageUtils = {
@@ -111,6 +112,26 @@ export const storageUtils = {
     }
   },
 
+  async getTasksWithDueDates(): Promise<Task[]> {
+    try {
+      const tasks = await this.getTasks();
+      return tasks.filter(t => t.dueDate);
+    } catch (error) {
+      console.log('Error getting tasks with due dates:', error);
+      return [];
+    }
+  },
+
+  async getTasksByDueDate(dueDate: string): Promise<Task[]> {
+    try {
+      const tasks = await this.getTasks();
+      return tasks.filter(t => t.dueDate === dueDate);
+    } catch (error) {
+      console.log('Error getting tasks by due date:', error);
+      return [];
+    }
+  },
+
   // Self-care reminders
   async getReminders(): Promise<SelfCareReminder[]> {
     try {
@@ -146,6 +167,52 @@ export const storageUtils = {
       }
     } catch (error) {
       console.log('Error updating reminder:', error);
+    }
+  },
+
+  // Custom Categories
+  async getCustomCategories(): Promise<TaskCategory[]> {
+    try {
+      const data = await AsyncStorage.getItem(KEYS.CUSTOM_CATEGORIES);
+      return data ? JSON.parse(data) : [];
+    } catch (error) {
+      console.log('Error loading custom categories:', error);
+      return [];
+    }
+  },
+
+  async getAllCategories(): Promise<TaskCategory[]> {
+    try {
+      const customCategories = await this.getCustomCategories();
+      return [...defaultCategories, ...customCategories];
+    } catch (error) {
+      console.log('Error loading all categories:', error);
+      return defaultCategories;
+    }
+  },
+
+  async addCustomCategory(category: string): Promise<void> {
+    try {
+      const customCategories = await this.getCustomCategories();
+      const allCategories = await this.getAllCategories();
+      
+      // Check if category already exists
+      if (!allCategories.includes(category)) {
+        customCategories.push(category);
+        await AsyncStorage.setItem(KEYS.CUSTOM_CATEGORIES, JSON.stringify(customCategories));
+      }
+    } catch (error) {
+      console.log('Error adding custom category:', error);
+    }
+  },
+
+  async deleteCustomCategory(category: string): Promise<void> {
+    try {
+      const customCategories = await this.getCustomCategories();
+      const filtered = customCategories.filter(c => c !== category);
+      await AsyncStorage.setItem(KEYS.CUSTOM_CATEGORIES, JSON.stringify(filtered));
+    } catch (error) {
+      console.log('Error deleting custom category:', error);
     }
   },
 };

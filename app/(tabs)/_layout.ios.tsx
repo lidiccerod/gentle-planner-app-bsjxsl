@@ -21,8 +21,12 @@ export default function TabLayout() {
         <Icon sf="checklist" />
         <Label>Tasks</Label>
       </NativeTabs.Trigger>
-      <NativeTabs.Trigger key="weekly" name="weekly">
+      <NativeTabs.Trigger key="calendar" name="calendar">
         <Icon sf="calendar" />
+        <Label>Calendar</Label>
+      </NativeTabs.Trigger>
+      <NativeTabs.Trigger key="weekly" name="weekly">
+        <Icon sf="chart.line.uptrend.xyaxis" />
         <Label>Weekly</Label>
       </NativeTabs.Trigger>
       <NativeTabs.Trigger key="profile" name="profile">
