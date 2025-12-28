@@ -24,7 +24,7 @@ export type TaskBucket =
   | 'medium-energy'   // Medium Energy
   | 'heavy-energy'    // Heavy Energy
   | 'for-others'      // For Others
-  | 'for-my-home'     // For My Home
+  | 'just-for-fun'    // Just for Fun
   | 'for-myself';     // For Myself
 
 export interface DailyCheckIn {

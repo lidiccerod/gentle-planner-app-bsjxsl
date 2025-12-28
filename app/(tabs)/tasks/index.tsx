@@ -185,7 +185,7 @@ export default function TasksScreen() {
     { bucket: 'medium-energy', label: 'Medium Energy' },
     { bucket: 'heavy-energy', label: 'Heavy Energy' },
     { bucket: 'for-others', label: 'For Others' },
-    { bucket: 'for-my-home', label: 'For My Home' },
+    { bucket: 'just-for-fun', label: 'Just for Fun' },
     { bucket: 'for-myself', label: 'For Myself' },
   ];
 
@@ -257,6 +257,40 @@ export default function TasksScreen() {
       fontWeight: '500',
     },
     filterButtonTextActive: {
+      color: isDark ? colors.darkBackground : colors.card,
+      fontWeight: '600',
+    },
+    bucketGridContainer: {
+      marginBottom: 14,
+    },
+    bucketGrid: {
+      flexDirection: 'row',
+      flexWrap: 'wrap',
+      gap: 8,
+    },
+    bucketGridButton: {
+      backgroundColor: isDark ? colors.darkCard : colors.card,
+      paddingHorizontal: 14,
+      paddingVertical: 10,
+      borderRadius: 12,
+      borderWidth: 1,
+      borderColor: isDark ? colors.darkAccent : colors.accent,
+      width: '31%',
+      alignItems: 'center',
+      justifyContent: 'center',
+      minHeight: 50,
+    },
+    bucketGridButtonActive: {
+      backgroundColor: isDark ? colors.darkPrimary : colors.primary,
+      borderColor: isDark ? colors.darkPrimary : colors.primary,
+    },
+    bucketGridButtonText: {
+      fontSize: 11,
+      color: isDark ? colors.darkText : colors.text,
+      fontWeight: '500',
+      textAlign: 'center',
+    },
+    bucketGridButtonTextActive: {
       color: isDark ? colors.darkBackground : colors.card,
       fontWeight: '600',
     },
@@ -473,43 +507,45 @@ export default function TasksScreen() {
           </View>
         )}
 
-        <View style={dynamicStyles.filterContainer}>
-          <TouchableOpacity
-            style={[
-              dynamicStyles.filterButton,
-              selectedBucketFilter === 'all' && dynamicStyles.filterButtonActive,
-            ]}
-            onPress={() => setSelectedBucketFilter('all')}
-          >
-            <Text
+        <View style={dynamicStyles.bucketGridContainer}>
+          <View style={dynamicStyles.bucketGrid}>
+            <TouchableOpacity
               style={[
-                dynamicStyles.filterButtonText,
-                selectedBucketFilter === 'all' && dynamicStyles.filterButtonTextActive,
+                dynamicStyles.bucketGridButton,
+                selectedBucketFilter === 'all' && dynamicStyles.bucketGridButtonActive,
               ]}
+              onPress={() => setSelectedBucketFilter('all')}
             >
-              All Buckets
-            </Text>
-          </TouchableOpacity>
-          {bucketOptions.map((item, index) => (
-            <React.Fragment key={index}>
-              <TouchableOpacity
+              <Text
                 style={[
-                  dynamicStyles.filterButton,
-                  selectedBucketFilter === item.bucket && dynamicStyles.filterButtonActive,
+                  dynamicStyles.bucketGridButtonText,
+                  selectedBucketFilter === 'all' && dynamicStyles.bucketGridButtonTextActive,
                 ]}
-                onPress={() => setSelectedBucketFilter(item.bucket)}
               >
-                <Text
+                All Buckets
+              </Text>
+            </TouchableOpacity>
+            {bucketOptions.map((item, index) => (
+              <React.Fragment key={index}>
+                <TouchableOpacity
                   style={[
-                    dynamicStyles.filterButtonText,
-                    selectedBucketFilter === item.bucket && dynamicStyles.filterButtonTextActive,
+                    dynamicStyles.bucketGridButton,
+                    selectedBucketFilter === item.bucket && dynamicStyles.bucketGridButtonActive,
                   ]}
+                  onPress={() => setSelectedBucketFilter(item.bucket)}
                 >
-                  {item.label}
-                </Text>
-              </TouchableOpacity>
-            </React.Fragment>
-          ))}
+                  <Text
+                    style={[
+                      dynamicStyles.bucketGridButtonText,
+                      selectedBucketFilter === item.bucket && dynamicStyles.bucketGridButtonTextActive,
+                    ]}
+                  >
+                    {item.label}
+                  </Text>
+                </TouchableOpacity>
+              </React.Fragment>
+            ))}
+          </View>
         </View>
 
         {mustDoTasks.length > 0 && (
