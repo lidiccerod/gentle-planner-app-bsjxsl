@@ -23,6 +23,8 @@ export default function TasksScreen() {
   const isDark = colorScheme === 'dark';
   const [tasks, setTasks] = useState<Task[]>([]);
   const [showAddModal, setShowAddModal] = useState(false);
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [editingTask, setEditingTask] = useState<Task | null>(null);
   const [newTaskTitle, setNewTaskTitle] = useState('');
   const [newTaskEnergy, setNewTaskEnergy] = useState<EnergyLevel>('moderate');
   const [newTaskPriority, setNewTaskPriority] = useState<TaskPriority>('can-wait');
@@ -95,13 +97,49 @@ export default function TasksScreen() {
     await storageUtils.addTask(newTask);
     setTasks([...tasks, newTask]);
     
+    resetForm();
+    setShowAddModal(false);
+  };
+
+  const openEditModal = (task: Task) => {
+    setEditingTask(task);
+    setNewTaskTitle(task.title);
+    setNewTaskEnergy(task.energyCost);
+    setNewTaskPriority(task.priority);
+    setNewTaskCategory(task.category);
+    setNewTaskBucket(task.bucket);
+    setNewTaskDueDate(task.dueDate ? new Date(task.dueDate) : undefined);
+    setShowEditModal(true);
+  };
+
+  const saveEditedTask = async () => {
+    if (!editingTask || !newTaskTitle.trim()) return;
+
+    const updatedTask: Task = {
+      ...editingTask,
+      title: newTaskTitle,
+      energyCost: newTaskEnergy,
+      priority: newTaskPriority,
+      category: newTaskCategory,
+      bucket: newTaskBucket,
+      dueDate: newTaskDueDate ? newTaskDueDate.toISOString().split('T')[0] : undefined,
+    };
+
+    await storageUtils.updateTask(editingTask.id, updatedTask);
+    setTasks(tasks.map(t => t.id === editingTask.id ? updatedTask : t));
+    
+    resetForm();
+    setShowEditModal(false);
+    setEditingTask(null);
+  };
+
+  const resetForm = () => {
     setNewTaskTitle('');
     setNewTaskEnergy('moderate');
     setNewTaskPriority('can-wait');
     setNewTaskCategory('general');
     setNewTaskBucket('medium-energy');
     setNewTaskDueDate(undefined);
-    setShowAddModal(false);
   };
 
   const addCustomCategory = async () => {
@@ -300,38 +338,56 @@ export default function TasksScreen() {
       color: isDark ? colors.darkText : colors.text,
       marginBottom: 10,
     },
+    taskGridContainer: {
+      flexDirection: 'row',
+      flexWrap: 'wrap',
+      gap: 10,
+      marginBottom: 10,
+    },
     taskCard: {
       backgroundColor: isDark ? colors.darkCard : colors.card,
       borderRadius: 12,
-      padding: 14,
-      marginBottom: 10,
-      flexDirection: 'row',
-      alignItems: 'center',
-      gap: 10,
+      padding: 12,
+      width: '31.5%',
+      minHeight: 120,
+      justifyContent: 'space-between',
     },
     taskCardCompleted: {
       opacity: 0.6,
     },
     taskTitle: {
-      fontSize: 14,
+      fontSize: 13,
       fontWeight: '500',
       color: isDark ? colors.darkText : colors.text,
-      marginBottom: 5,
+      marginBottom: 6,
+      lineHeight: 18,
     },
     taskTitleCompleted: {
       textDecorationLine: 'line-through',
       color: isDark ? colors.darkTextSecondary : colors.textSecondary,
     },
     energyBadgeSmall: {
-      paddingHorizontal: 7,
-      paddingVertical: 3,
-      borderRadius: 7,
+      paddingHorizontal: 6,
+      paddingVertical: 2,
+      borderRadius: 6,
+      alignSelf: 'flex-start',
+      marginBottom: 4,
     },
     badgeText: {
-      fontSize: 10,
+      fontSize: 9,
       color: isDark ? colors.darkText : colors.text,
       fontWeight: '500',
       textTransform: 'capitalize',
+    },
+    taskActions: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      marginTop: 6,
+    },
+    taskActionButtons: {
+      flexDirection: 'row',
+      gap: 6,
     },
     emptyText: {
       fontSize: 17,
@@ -451,10 +507,12 @@ export default function TasksScreen() {
     },
     dueDateBadge: {
       backgroundColor: isDark ? colors.darkSecondary : colors.secondary,
-      paddingHorizontal: 7,
-      paddingVertical: 3,
-      borderRadius: 7,
-      marginLeft: 6,
+      paddingHorizontal: 6,
+      paddingVertical: 2,
+      borderRadius: 6,
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 3,
     },
   });
 
@@ -551,57 +609,63 @@ export default function TasksScreen() {
         {mustDoTasks.length > 0 && (
           <View style={styles.section}>
             <Text style={dynamicStyles.sectionTitle}>Must Do</Text>
-            {mustDoTasks.map((task, index) => (
-              <React.Fragment key={index}>
-                <TaskItem
-                  task={task}
-                  onToggle={toggleTaskComplete}
-                  onDelete={deleteTask}
-                  getEnergyColor={getEnergyColor}
-                  getPriorityLabel={getPriorityLabel}
-                  formatDate={formatDate}
-                  isDark={isDark}
-                />
-              </React.Fragment>
-            ))}
+            <View style={dynamicStyles.taskGridContainer}>
+              {mustDoTasks.map((task, index) => (
+                <React.Fragment key={index}>
+                  <TaskGridItem
+                    task={task}
+                    onToggle={toggleTaskComplete}
+                    onDelete={deleteTask}
+                    onEdit={openEditModal}
+                    getEnergyColor={getEnergyColor}
+                    formatDate={formatDate}
+                    isDark={isDark}
+                  />
+                </React.Fragment>
+              ))}
+            </View>
           </View>
         )}
 
         {otherTasks.length > 0 && (
           <View style={styles.section}>
             <Text style={dynamicStyles.sectionTitle}>Other Tasks</Text>
-            {otherTasks.map((task, index) => (
-              <React.Fragment key={index}>
-                <TaskItem
-                  task={task}
-                  onToggle={toggleTaskComplete}
-                  onDelete={deleteTask}
-                  getEnergyColor={getEnergyColor}
-                  getPriorityLabel={getPriorityLabel}
-                  formatDate={formatDate}
-                  isDark={isDark}
-                />
-              </React.Fragment>
-            ))}
+            <View style={dynamicStyles.taskGridContainer}>
+              {otherTasks.map((task, index) => (
+                <React.Fragment key={index}>
+                  <TaskGridItem
+                    task={task}
+                    onToggle={toggleTaskComplete}
+                    onDelete={deleteTask}
+                    onEdit={openEditModal}
+                    getEnergyColor={getEnergyColor}
+                    formatDate={formatDate}
+                    isDark={isDark}
+                  />
+                </React.Fragment>
+              ))}
+            </View>
           </View>
         )}
 
         {completedTasks.length > 0 && (
           <View style={styles.section}>
             <Text style={dynamicStyles.sectionTitle}>Completed</Text>
-            {completedTasks.map((task, index) => (
-              <React.Fragment key={index}>
-                <TaskItem
-                  task={task}
-                  onToggle={toggleTaskComplete}
-                  onDelete={deleteTask}
-                  getEnergyColor={getEnergyColor}
-                  getPriorityLabel={getPriorityLabel}
-                  formatDate={formatDate}
-                  isDark={isDark}
-                />
-              </React.Fragment>
-            ))}
+            <View style={dynamicStyles.taskGridContainer}>
+              {completedTasks.map((task, index) => (
+                <React.Fragment key={index}>
+                  <TaskGridItem
+                    task={task}
+                    onToggle={toggleTaskComplete}
+                    onDelete={deleteTask}
+                    onEdit={openEditModal}
+                    getEnergyColor={getEnergyColor}
+                    formatDate={formatDate}
+                    isDark={isDark}
+                  />
+                </React.Fragment>
+              ))}
+            </View>
           </View>
         )}
 
@@ -637,13 +701,19 @@ export default function TasksScreen() {
         visible={showAddModal}
         animationType="slide"
         transparent={true}
-        onRequestClose={() => setShowAddModal(false)}
+        onRequestClose={() => {
+          setShowAddModal(false);
+          resetForm();
+        }}
       >
         <View style={dynamicStyles.modalOverlay}>
           <ScrollView style={dynamicStyles.modalContent}>
             <View style={styles.modalHeader}>
               <Text style={dynamicStyles.modalTitle}>Add New Task</Text>
-              <TouchableOpacity onPress={() => setShowAddModal(false)}>
+              <TouchableOpacity onPress={() => {
+                setShowAddModal(false);
+                resetForm();
+              }}>
                 <IconSymbol
                   ios_icon_name="xmark"
                   android_material_icon_name="close"
@@ -813,6 +883,193 @@ export default function TasksScreen() {
       </Modal>
 
       <Modal
+        visible={showEditModal}
+        animationType="slide"
+        transparent={true}
+        onRequestClose={() => {
+          setShowEditModal(false);
+          setEditingTask(null);
+          resetForm();
+        }}
+      >
+        <View style={dynamicStyles.modalOverlay}>
+          <ScrollView style={dynamicStyles.modalContent}>
+            <View style={styles.modalHeader}>
+              <Text style={dynamicStyles.modalTitle}>Edit Task</Text>
+              <TouchableOpacity onPress={() => {
+                setShowEditModal(false);
+                setEditingTask(null);
+                resetForm();
+              }}>
+                <IconSymbol
+                  ios_icon_name="xmark"
+                  android_material_icon_name="close"
+                  size={22}
+                  color={isDark ? colors.darkText : colors.text}
+                />
+              </TouchableOpacity>
+            </View>
+
+            <TextInput
+              style={dynamicStyles.input}
+              placeholder="Task title"
+              placeholderTextColor={isDark ? colors.darkTextSecondary : colors.textSecondary}
+              value={newTaskTitle}
+              onChangeText={setNewTaskTitle}
+            />
+
+            <Text style={dynamicStyles.modalLabel}>Energy Demand Level</Text>
+            <View style={styles.optionsRow}>
+              {(['very-low', 'low', 'moderate', 'high'] as EnergyLevel[]).map((energy, index) => (
+                <React.Fragment key={index}>
+                  <TouchableOpacity
+                    style={[
+                      dynamicStyles.optionButton,
+                      newTaskEnergy === energy && { backgroundColor: getEnergyColor(energy) },
+                    ]}
+                    onPress={() => {
+                      setNewTaskEnergy(energy);
+                      setNewTaskBucket(getBucketFromEnergy(energy));
+                    }}
+                  >
+                    <Text
+                      style={[
+                        dynamicStyles.optionText,
+                        newTaskEnergy === energy && dynamicStyles.optionTextSelected,
+                      ]}
+                    >
+                      {energyLevelLabels[energy]}
+                    </Text>
+                  </TouchableOpacity>
+                </React.Fragment>
+              ))}
+            </View>
+
+            <Text style={dynamicStyles.modalLabel}>Priority & Due Date</Text>
+            <View style={styles.optionsRow}>
+              {(['must-do', 'can-wait', 'optional'] as TaskPriority[]).map((priority, index) => (
+                <React.Fragment key={index}>
+                  <TouchableOpacity
+                    style={[
+                      dynamicStyles.optionButton,
+                      newTaskPriority === priority && { backgroundColor: isDark ? colors.darkPrimary : colors.primary },
+                    ]}
+                    onPress={() => setNewTaskPriority(priority)}
+                  >
+                    <Text
+                      style={[
+                        dynamicStyles.optionText,
+                        newTaskPriority === priority && dynamicStyles.optionTextSelected,
+                      ]}
+                    >
+                      {getPriorityLabel(priority)}
+                    </Text>
+                  </TouchableOpacity>
+                </React.Fragment>
+              ))}
+            </View>
+
+            <TouchableOpacity
+              style={dynamicStyles.dueDateButton}
+              onPress={() => setShowDatePicker(true)}
+            >
+              {newTaskDueDate ? (
+                <Text style={dynamicStyles.dueDateText}>
+                  Due: {formatDate(newTaskDueDate.toISOString().split('T')[0])}
+                </Text>
+              ) : (
+                <Text style={dynamicStyles.dueDatePlaceholder}>
+                  Set due date (optional)
+                </Text>
+              )}
+              <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                {newTaskDueDate && (
+                  <TouchableOpacity
+                    onPress={() => setNewTaskDueDate(undefined)}
+                    style={{ marginRight: 10 }}
+                  >
+                    <IconSymbol
+                      ios_icon_name="xmark.circle.fill"
+                      android_material_icon_name="cancel"
+                      size={18}
+                      color={isDark ? colors.darkTextSecondary : colors.textSecondary}
+                    />
+                  </TouchableOpacity>
+                )}
+                <IconSymbol
+                  ios_icon_name="calendar"
+                  android_material_icon_name="calendar_today"
+                  size={18}
+                  color={isDark ? colors.darkText : colors.text}
+                />
+              </View>
+            </TouchableOpacity>
+
+            {showDatePicker && (
+              <DateTimePicker
+                value={newTaskDueDate || new Date()}
+                mode="date"
+                display={Platform.OS === 'ios' ? 'spinner' : 'default'}
+                onChange={(event, selectedDate) => {
+                  setShowDatePicker(Platform.OS === 'ios');
+                  if (selectedDate) {
+                    setNewTaskDueDate(selectedDate);
+                  }
+                }}
+                minimumDate={new Date()}
+              />
+            )}
+
+            <Text style={dynamicStyles.modalLabel}>Category</Text>
+            <ScrollView style={styles.categoryScroll} nestedScrollEnabled>
+              {allCategories.map((category, index) => (
+                <React.Fragment key={index}>
+                  <TouchableOpacity
+                    style={[
+                      dynamicStyles.categoryButton,
+                      newTaskCategory === category && { backgroundColor: isDark ? colors.darkAccent : colors.accent },
+                    ]}
+                    onPress={() => setNewTaskCategory(category)}
+                  >
+                    <Text
+                      style={[
+                        dynamicStyles.optionText,
+                        newTaskCategory === category && dynamicStyles.optionTextSelected,
+                      ]}
+                    >
+                      {category}
+                    </Text>
+                  </TouchableOpacity>
+                </React.Fragment>
+              ))}
+              <TouchableOpacity
+                style={[dynamicStyles.categoryButton, { borderWidth: 1, borderColor: isDark ? colors.darkPrimary : colors.primary, borderStyle: 'dashed' }]}
+                onPress={() => setShowAddCategory(true)}
+              >
+                <IconSymbol
+                  ios_icon_name="plus.circle"
+                  android_material_icon_name="add_circle_outline"
+                  size={18}
+                  color={isDark ? colors.darkPrimary : colors.primary}
+                />
+                <Text style={[dynamicStyles.optionText, { color: isDark ? colors.darkPrimary : colors.primary }]}>
+                  Add Custom Category
+                </Text>
+              </TouchableOpacity>
+            </ScrollView>
+
+            <TouchableOpacity
+              style={[dynamicStyles.addTaskButton, !newTaskTitle.trim() && dynamicStyles.addTaskButtonDisabled]}
+              onPress={saveEditedTask}
+              disabled={!newTaskTitle.trim()}
+            >
+              <Text style={dynamicStyles.addTaskButtonText}>Save Changes</Text>
+            </TouchableOpacity>
+          </ScrollView>
+        </View>
+      </Modal>
+
+      <Modal
         visible={showAddCategory}
         animationType="fade"
         transparent={true}
@@ -858,109 +1115,128 @@ export default function TasksScreen() {
   );
 }
 
-interface TaskItemProps {
+interface TaskGridItemProps {
   task: Task;
   onToggle: (id: string) => void;
   onDelete: (id: string) => void;
+  onEdit: (task: Task) => void;
   getEnergyColor: (energy: EnergyLevel) => string;
-  getPriorityLabel: (priority: TaskPriority) => string;
   formatDate: (date: string) => string;
   isDark: boolean;
 }
 
-function TaskItem({ task, onToggle, onDelete, getEnergyColor, getPriorityLabel, formatDate, isDark }: TaskItemProps) {
+function TaskGridItem({ task, onToggle, onDelete, onEdit, getEnergyColor, formatDate, isDark }: TaskGridItemProps) {
   const dynamicStyles = StyleSheet.create({
     taskCard: {
       backgroundColor: isDark ? colors.darkCard : colors.card,
       borderRadius: 12,
-      padding: 14,
-      marginBottom: 10,
-      flexDirection: 'row',
-      alignItems: 'center',
-      gap: 10,
+      padding: 12,
+      width: '31.5%',
+      minHeight: 120,
+      justifyContent: 'space-between',
     },
     taskCardCompleted: {
       opacity: 0.6,
     },
     taskTitle: {
-      fontSize: 14,
+      fontSize: 13,
       fontWeight: '500',
       color: isDark ? colors.darkText : colors.text,
-      marginBottom: 5,
+      marginBottom: 6,
+      lineHeight: 18,
     },
     taskTitleCompleted: {
       textDecorationLine: 'line-through',
       color: isDark ? colors.darkTextSecondary : colors.textSecondary,
     },
     energyBadgeSmall: {
-      paddingHorizontal: 7,
-      paddingVertical: 3,
-      borderRadius: 7,
+      paddingHorizontal: 6,
+      paddingVertical: 2,
+      borderRadius: 6,
+      alignSelf: 'flex-start',
+      marginBottom: 4,
     },
     badgeText: {
-      fontSize: 10,
+      fontSize: 9,
       color: isDark ? colors.darkText : colors.text,
       fontWeight: '500',
       textTransform: 'capitalize',
     },
+    taskActions: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      marginTop: 6,
+    },
+    taskActionButtons: {
+      flexDirection: 'row',
+      gap: 6,
+    },
     dueDateBadge: {
       backgroundColor: isDark ? colors.darkSecondary : colors.secondary,
-      paddingHorizontal: 7,
-      paddingVertical: 3,
-      borderRadius: 7,
+      paddingHorizontal: 6,
+      paddingVertical: 2,
+      borderRadius: 6,
       flexDirection: 'row',
       alignItems: 'center',
       gap: 3,
+      marginBottom: 4,
     },
   });
 
   return (
     <View style={[dynamicStyles.taskCard, task.completed && dynamicStyles.taskCardCompleted]}>
-      <TouchableOpacity
-        style={styles.taskCheckbox}
-        onPress={() => onToggle(task.id)}
-      >
-        <IconSymbol
-          ios_icon_name={task.completed ? "checkmark.circle.fill" : "circle"}
-          android_material_icon_name={task.completed ? "check_circle" : "radio_button_unchecked"}
-          size={26}
-          color={task.completed ? (isDark ? colors.darkPrimary : colors.primary) : (isDark ? colors.darkTextSecondary : colors.textSecondary)}
-        />
-      </TouchableOpacity>
-
-      <View style={styles.taskContent}>
+      <View>
         <Text style={[dynamicStyles.taskTitle, task.completed && dynamicStyles.taskTitleCompleted]}>
           {task.title}
         </Text>
-        <View style={styles.taskMeta}>
-          <View style={[dynamicStyles.energyBadgeSmall, { backgroundColor: getEnergyColor(task.energyCost) }]}>
-            <Text style={dynamicStyles.badgeText}>{energyLevelLabels[task.energyCost]}</Text>
-          </View>
-          {task.dueDate && (
-            <View style={dynamicStyles.dueDateBadge}>
-              <IconSymbol
-                ios_icon_name="calendar"
-                android_material_icon_name="calendar_today"
-                size={10}
-                color={isDark ? colors.darkText : colors.text}
-              />
-              <Text style={dynamicStyles.badgeText}>{formatDate(task.dueDate)}</Text>
-            </View>
-          )}
+        <View style={[dynamicStyles.energyBadgeSmall, { backgroundColor: getEnergyColor(task.energyCost) }]}>
+          <Text style={dynamicStyles.badgeText}>{energyLevelLabels[task.energyCost]}</Text>
         </View>
+        {task.dueDate && (
+          <View style={dynamicStyles.dueDateBadge}>
+            <IconSymbol
+              ios_icon_name="calendar"
+              android_material_icon_name="calendar_today"
+              size={9}
+              color={isDark ? colors.darkText : colors.text}
+            />
+            <Text style={dynamicStyles.badgeText}>{formatDate(task.dueDate)}</Text>
+          </View>
+        )}
       </View>
 
-      <TouchableOpacity
-        style={styles.deleteButton}
-        onPress={() => onDelete(task.id)}
-      >
-        <IconSymbol
-          ios_icon_name="trash"
-          android_material_icon_name="delete"
-          size={18}
-          color={isDark ? colors.darkTextSecondary : colors.textSecondary}
-        />
-      </TouchableOpacity>
+      <View style={dynamicStyles.taskActions}>
+        <TouchableOpacity
+          onPress={() => onToggle(task.id)}
+        >
+          <IconSymbol
+            ios_icon_name={task.completed ? "checkmark.circle.fill" : "circle"}
+            android_material_icon_name={task.completed ? "check_circle" : "radio_button_unchecked"}
+            size={22}
+            color={task.completed ? (isDark ? colors.darkPrimary : colors.primary) : (isDark ? colors.darkTextSecondary : colors.textSecondary)}
+          />
+        </TouchableOpacity>
+
+        <View style={dynamicStyles.taskActionButtons}>
+          <TouchableOpacity onPress={() => onEdit(task)}>
+            <IconSymbol
+              ios_icon_name="pencil"
+              android_material_icon_name="edit"
+              size={16}
+              color={isDark ? colors.darkTextSecondary : colors.textSecondary}
+            />
+          </TouchableOpacity>
+          <TouchableOpacity onPress={() => onDelete(task.id)}>
+            <IconSymbol
+              ios_icon_name="trash"
+              android_material_icon_name="delete"
+              size={16}
+              color={isDark ? colors.darkTextSecondary : colors.textSecondary}
+            />
+          </TouchableOpacity>
+        </View>
+      </View>
     </View>
   );
 }
@@ -979,21 +1255,6 @@ const styles = StyleSheet.create({
   },
   section: {
     marginBottom: 20,
-  },
-  taskCheckbox: {
-    padding: 4,
-  },
-  taskContent: {
-    flex: 1,
-  },
-  taskMeta: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-    flexWrap: 'wrap',
-  },
-  deleteButton: {
-    padding: 6,
   },
   emptyState: {
     alignItems: 'center',
