@@ -231,32 +231,6 @@ export default function HomeScreen() {
         </View>
 
         <View style={styles.section}>
-          <Text style={dynamicStyles.sectionTitle}>Symptoms (optional)</Text>
-          <View style={styles.symptomsGrid}>
-            {symptoms.map((item, index) => (
-              <React.Fragment key={index}>
-                <TouchableOpacity
-                  style={[
-                    dynamicStyles.symptomChip,
-                    selectedSymptoms.includes(item.symptom) && dynamicStyles.symptomChipSelected,
-                  ]}
-                  onPress={() => toggleSymptom(item.symptom)}
-                >
-                  <Text
-                    style={[
-                      dynamicStyles.symptomText,
-                      selectedSymptoms.includes(item.symptom) && dynamicStyles.symptomTextSelected,
-                    ]}
-                  >
-                    {item.label}
-                  </Text>
-                </TouchableOpacity>
-              </React.Fragment>
-            ))}
-          </View>
-        </View>
-
-        <View style={styles.section}>
           <Text style={dynamicStyles.sectionTitle}>Mood</Text>
           <View style={styles.moodsGrid}>
             {moods.map((item, index) => (
@@ -281,6 +255,32 @@ export default function HomeScreen() {
                     style={[
                       dynamicStyles.moodLabel,
                       selectedMood === item.mood && dynamicStyles.moodLabelSelected,
+                    ]}
+                  >
+                    {item.label}
+                  </Text>
+                </TouchableOpacity>
+              </React.Fragment>
+            ))}
+          </View>
+        </View>
+
+        <View style={styles.section}>
+          <Text style={dynamicStyles.sectionTitle}>Symptoms (optional)</Text>
+          <View style={styles.symptomsGrid}>
+            {symptoms.map((item, index) => (
+              <React.Fragment key={index}>
+                <TouchableOpacity
+                  style={[
+                    dynamicStyles.symptomChip,
+                    selectedSymptoms.includes(item.symptom) && dynamicStyles.symptomChipSelected,
+                  ]}
+                  onPress={() => toggleSymptom(item.symptom)}
+                >
+                  <Text
+                    style={[
+                      dynamicStyles.symptomText,
+                      selectedSymptoms.includes(item.symptom) && dynamicStyles.symptomTextSelected,
                     ]}
                   >
                     {item.label}
