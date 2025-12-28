@@ -1,25 +1,45 @@
 
 import { StyleSheet, ViewStyle, TextStyle } from 'react-native';
 
+// Embody Color Palette - Luxury, Peaceful, Calm
 export const colors = {
-  background: '#F8F8F8',
-  text: '#333333',
-  textSecondary: '#777777',
-  primary: '#A7C4BC',
-  secondary: '#E8DDCB',
-  accent: '#D5BDAF',
-  card: '#FFFFFF',
-  highlight: '#F2E8CF',
+  // Main palette
+  morningDew: '#F0EFE6',      // Light cream/beige - backgrounds
+  overcast: '#EAEAEA',         // Light gray - secondary backgrounds
+  earlyDusk: '#C6C9D2',        // Muted blue-gray - accents
+  tanParchment: '#DCCFC1',     // Warm tan - highlights
+  almondDust: '#B8AEA8',       // Muted taupe - secondary elements
+  coffeeGrounds: '#393831',    // Dark brown/charcoal - text
   
-  // Energy level colors
-  energyLow: '#D5BDAF',
-  energyMedium: '#A7C4BC',
-  energyHigh: '#8FB8A8',
+  // Semantic colors for light mode
+  background: '#F0EFE6',       // Morning Dew
+  card: '#FFFFFF',             // Pure white for cards
+  text: '#393831',             // Coffee Grounds
+  textSecondary: '#B8AEA8',    // Almond Dust
+  primary: '#C6C9D2',          // Early Dusk
+  secondary: '#DCCFC1',        // Tan Parchment
+  accent: '#B8AEA8',           // Almond Dust
+  highlight: '#EAEAEA',        // Overcast
   
-  // Status colors
-  success: '#A7C4BC',
-  warning: '#E8DDCB',
-  error: '#D5BDAF',
+  // Dark mode colors
+  darkBackground: '#393831',   // Coffee Grounds
+  darkCard: '#4A4840',         // Slightly lighter than Coffee Grounds
+  darkText: '#F0EFE6',         // Morning Dew
+  darkTextSecondary: '#B8AEA8', // Almond Dust
+  darkPrimary: '#C6C9D2',      // Early Dusk
+  darkSecondary: '#DCCFC1',    // Tan Parchment
+  darkAccent: '#B8AEA8',       // Almond Dust
+  darkHighlight: '#4A4840',    // Darker highlight
+  
+  // Energy level colors (using palette)
+  energyLow: '#DCCFC1',        // Tan Parchment - warm and gentle
+  energyMedium: '#B8AEA8',     // Almond Dust - neutral
+  energyHigh: '#C6C9D2',       // Early Dusk - cool and energizing
+  
+  // Status colors (using palette)
+  success: '#C6C9D2',          // Early Dusk
+  warning: '#DCCFC1',          // Tan Parchment
+  error: '#B8AEA8',            // Almond Dust
 };
 
 export const buttonStyles = StyleSheet.create({
@@ -96,7 +116,7 @@ export const commonStyles = StyleSheet.create({
     padding: 16,
     marginVertical: 8,
     width: '100%',
-    boxShadow: '0px 2px 8px rgba(0, 0, 0, 0.08)',
+    boxShadow: '0px 2px 8px rgba(57, 56, 49, 0.08)',
     elevation: 2,
   },
   icon: {

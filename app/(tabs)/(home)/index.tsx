@@ -7,6 +7,7 @@ import {
   ScrollView,
   TouchableOpacity,
   Platform,
+  useColorScheme,
 } from 'react-native';
 import { colors, commonStyles } from '@/styles/commonStyles';
 import { IconSymbol } from '@/components/IconSymbol';
@@ -14,6 +15,8 @@ import { storageUtils } from '@/utils/storage';
 import { DailyCheckIn, EnergyLevel, Symptom, Mood } from '@/types';
 
 export default function HomeScreen() {
+  const colorScheme = useColorScheme();
+  const isDark = colorScheme === 'dark';
   const [checkIn, setCheckIn] = useState<DailyCheckIn | null>(null);
   const [selectedEnergy, setSelectedEnergy] = useState<EnergyLevel | null>(null);
   const [selectedSymptoms, setSelectedSymptoms] = useState<Symptom[]>([]);
@@ -94,39 +97,162 @@ export default function HomeScreen() {
     }
   };
 
+  const dynamicStyles = StyleSheet.create({
+    container: {
+      flex: 1,
+      backgroundColor: isDark ? colors.darkBackground : colors.background,
+    },
+    title: {
+      fontSize: 32,
+      fontWeight: '700',
+      color: isDark ? colors.darkText : colors.text,
+      marginBottom: 8,
+    },
+    encouragingText: {
+      fontSize: 16,
+      color: isDark ? colors.darkTextSecondary : colors.textSecondary,
+      fontStyle: 'italic',
+    },
+    completedBanner: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      backgroundColor: isDark ? colors.darkHighlight : colors.highlight,
+      padding: 16,
+      borderRadius: 12,
+      marginBottom: 24,
+      gap: 12,
+    },
+    completedText: {
+      fontSize: 16,
+      color: isDark ? colors.darkText : colors.text,
+      fontWeight: '500',
+    },
+    sectionTitle: {
+      fontSize: 20,
+      fontWeight: '600',
+      color: isDark ? colors.darkText : colors.text,
+      marginBottom: 16,
+    },
+    energyButton: {
+      flex: 1,
+      backgroundColor: isDark ? colors.darkCard : colors.card,
+      padding: 16,
+      borderRadius: 12,
+      alignItems: 'center',
+      gap: 8,
+      borderWidth: 2,
+      borderColor: 'transparent',
+    },
+    energyButtonSelected: {
+      backgroundColor: isDark ? colors.darkPrimary : colors.primary,
+      borderColor: isDark ? colors.darkPrimary : colors.primary,
+    },
+    energyLabel: {
+      fontSize: 12,
+      color: isDark ? colors.darkText : colors.text,
+      textAlign: 'center',
+      fontWeight: '500',
+    },
+    energyLabelSelected: {
+      color: isDark ? colors.darkBackground : colors.card,
+      fontWeight: '600',
+    },
+    symptomChip: {
+      backgroundColor: isDark ? colors.darkCard : colors.card,
+      paddingHorizontal: 16,
+      paddingVertical: 10,
+      borderRadius: 20,
+      borderWidth: 1,
+      borderColor: isDark ? colors.darkAccent : colors.accent,
+    },
+    symptomChipSelected: {
+      backgroundColor: isDark ? colors.darkAccent : colors.accent,
+      borderColor: isDark ? colors.darkAccent : colors.accent,
+    },
+    symptomText: {
+      fontSize: 14,
+      color: isDark ? colors.darkText : colors.text,
+      fontWeight: '500',
+    },
+    symptomTextSelected: {
+      color: isDark ? colors.darkBackground : colors.card,
+      fontWeight: '600',
+    },
+    moodButton: {
+      width: '30%',
+      backgroundColor: isDark ? colors.darkCard : colors.card,
+      padding: 12,
+      borderRadius: 12,
+      alignItems: 'center',
+      gap: 6,
+      borderWidth: 2,
+      borderColor: 'transparent',
+    },
+    moodButtonSelected: {
+      backgroundColor: isDark ? colors.darkPrimary : colors.primary,
+      borderColor: isDark ? colors.darkPrimary : colors.primary,
+    },
+    moodLabel: {
+      fontSize: 12,
+      color: isDark ? colors.darkText : colors.text,
+      textAlign: 'center',
+      fontWeight: '500',
+    },
+    moodLabelSelected: {
+      color: isDark ? colors.darkBackground : colors.card,
+      fontWeight: '600',
+    },
+    saveButton: {
+      backgroundColor: isDark ? colors.darkPrimary : colors.primary,
+      padding: 18,
+      borderRadius: 12,
+      alignItems: 'center',
+      marginTop: 8,
+    },
+    saveButtonDisabled: {
+      backgroundColor: isDark ? colors.darkSecondary : colors.secondary,
+      opacity: 0.5,
+    },
+    saveButtonText: {
+      fontSize: 18,
+      fontWeight: '600',
+      color: isDark ? colors.darkBackground : colors.card,
+    },
+  });
+
   return (
-    <View style={styles.container}>
+    <View style={dynamicStyles.container}>
       <ScrollView
         style={styles.scrollView}
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
       >
         <View style={styles.header}>
-          <Text style={styles.title}>Daily Check-In</Text>
-          <Text style={styles.encouragingText}>{getEncouragingMessage()}</Text>
+          <Text style={dynamicStyles.title}>Daily Check-In</Text>
+          <Text style={dynamicStyles.encouragingText}>{getEncouragingMessage()}</Text>
         </View>
 
         {checkIn && (
-          <View style={styles.completedBanner}>
+          <View style={dynamicStyles.completedBanner}>
             <IconSymbol
               ios_icon_name="checkmark.circle.fill"
               android_material_icon_name="check_circle"
               size={24}
-              color={colors.primary}
+              color={isDark ? colors.darkPrimary : colors.primary}
             />
-            <Text style={styles.completedText}>Check-in completed for today</Text>
+            <Text style={dynamicStyles.completedText}>Check-in completed for today</Text>
           </View>
         )}
 
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Energy Level</Text>
+          <Text style={dynamicStyles.sectionTitle}>Energy Level</Text>
           <View style={styles.optionsRow}>
             {energyLevels.map((item, index) => (
               <React.Fragment key={index}>
                 <TouchableOpacity
                   style={[
-                    styles.energyButton,
-                    selectedEnergy === item.level && styles.energyButtonSelected,
+                    dynamicStyles.energyButton,
+                    selectedEnergy === item.level && dynamicStyles.energyButtonSelected,
                   ]}
                   onPress={() => setSelectedEnergy(item.level)}
                 >
@@ -134,12 +260,15 @@ export default function HomeScreen() {
                     ios_icon_name="battery.100"
                     android_material_icon_name={item.icon}
                     size={28}
-                    color={selectedEnergy === item.level ? colors.card : colors.text}
+                    color={selectedEnergy === item.level 
+                      ? (isDark ? colors.darkBackground : colors.card)
+                      : (isDark ? colors.darkText : colors.text)
+                    }
                   />
                   <Text
                     style={[
-                      styles.energyLabel,
-                      selectedEnergy === item.level && styles.energyLabelSelected,
+                      dynamicStyles.energyLabel,
+                      selectedEnergy === item.level && dynamicStyles.energyLabelSelected,
                     ]}
                   >
                     {item.label}
@@ -151,21 +280,21 @@ export default function HomeScreen() {
         </View>
 
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Symptoms (optional)</Text>
+          <Text style={dynamicStyles.sectionTitle}>Symptoms (optional)</Text>
           <View style={styles.symptomsGrid}>
             {symptoms.map((item, index) => (
               <React.Fragment key={index}>
                 <TouchableOpacity
                   style={[
-                    styles.symptomChip,
-                    selectedSymptoms.includes(item.symptom) && styles.symptomChipSelected,
+                    dynamicStyles.symptomChip,
+                    selectedSymptoms.includes(item.symptom) && dynamicStyles.symptomChipSelected,
                   ]}
                   onPress={() => toggleSymptom(item.symptom)}
                 >
                   <Text
                     style={[
-                      styles.symptomText,
-                      selectedSymptoms.includes(item.symptom) && styles.symptomTextSelected,
+                      dynamicStyles.symptomText,
+                      selectedSymptoms.includes(item.symptom) && dynamicStyles.symptomTextSelected,
                     ]}
                   >
                     {item.label}
@@ -177,14 +306,14 @@ export default function HomeScreen() {
         </View>
 
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Mood</Text>
+          <Text style={dynamicStyles.sectionTitle}>Mood</Text>
           <View style={styles.moodsGrid}>
             {moods.map((item, index) => (
               <React.Fragment key={index}>
                 <TouchableOpacity
                   style={[
-                    styles.moodButton,
-                    selectedMood === item.mood && styles.moodButtonSelected,
+                    dynamicStyles.moodButton,
+                    selectedMood === item.mood && dynamicStyles.moodButtonSelected,
                   ]}
                   onPress={() => setSelectedMood(item.mood)}
                 >
@@ -192,12 +321,15 @@ export default function HomeScreen() {
                     ios_icon_name="face.smiling"
                     android_material_icon_name={item.icon}
                     size={24}
-                    color={selectedMood === item.mood ? colors.card : colors.text}
+                    color={selectedMood === item.mood 
+                      ? (isDark ? colors.darkBackground : colors.card)
+                      : (isDark ? colors.darkText : colors.text)
+                    }
                   />
                   <Text
                     style={[
-                      styles.moodLabel,
-                      selectedMood === item.mood && styles.moodLabelSelected,
+                      dynamicStyles.moodLabel,
+                      selectedMood === item.mood && dynamicStyles.moodLabelSelected,
                     ]}
                   >
                     {item.label}
@@ -210,13 +342,13 @@ export default function HomeScreen() {
 
         <TouchableOpacity
           style={[
-            styles.saveButton,
-            (!selectedEnergy || !selectedMood) && styles.saveButtonDisabled,
+            dynamicStyles.saveButton,
+            (!selectedEnergy || !selectedMood) && dynamicStyles.saveButtonDisabled,
           ]}
           onPress={saveCheckIn}
           disabled={!selectedEnergy || !selectedMood}
         >
-          <Text style={styles.saveButtonText}>
+          <Text style={dynamicStyles.saveButtonText}>
             {checkIn ? 'Update Check-In' : 'Save Check-In'}
           </Text>
         </TouchableOpacity>
@@ -226,10 +358,6 @@ export default function HomeScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: colors.background,
-  },
   scrollView: {
     flex: 1,
   },
@@ -241,137 +369,21 @@ const styles = StyleSheet.create({
   header: {
     marginBottom: 24,
   },
-  title: {
-    fontSize: 32,
-    fontWeight: '700',
-    color: colors.text,
-    marginBottom: 8,
-  },
-  encouragingText: {
-    fontSize: 16,
-    color: colors.textSecondary,
-    fontStyle: 'italic',
-  },
-  completedBanner: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: colors.highlight,
-    padding: 16,
-    borderRadius: 12,
-    marginBottom: 24,
-    gap: 12,
-  },
-  completedText: {
-    fontSize: 16,
-    color: colors.text,
-    fontWeight: '500',
-  },
   section: {
     marginBottom: 32,
-  },
-  sectionTitle: {
-    fontSize: 20,
-    fontWeight: '600',
-    color: colors.text,
-    marginBottom: 16,
   },
   optionsRow: {
     flexDirection: 'row',
     gap: 12,
-  },
-  energyButton: {
-    flex: 1,
-    backgroundColor: colors.card,
-    padding: 16,
-    borderRadius: 12,
-    alignItems: 'center',
-    gap: 8,
-    borderWidth: 2,
-    borderColor: 'transparent',
-  },
-  energyButtonSelected: {
-    backgroundColor: colors.primary,
-    borderColor: colors.primary,
-  },
-  energyLabel: {
-    fontSize: 12,
-    color: colors.text,
-    textAlign: 'center',
-    fontWeight: '500',
-  },
-  energyLabelSelected: {
-    color: colors.card,
-    fontWeight: '600',
   },
   symptomsGrid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
     gap: 10,
   },
-  symptomChip: {
-    backgroundColor: colors.card,
-    paddingHorizontal: 16,
-    paddingVertical: 10,
-    borderRadius: 20,
-    borderWidth: 1,
-    borderColor: colors.accent,
-  },
-  symptomChipSelected: {
-    backgroundColor: colors.accent,
-    borderColor: colors.accent,
-  },
-  symptomText: {
-    fontSize: 14,
-    color: colors.text,
-    fontWeight: '500',
-  },
-  symptomTextSelected: {
-    color: colors.card,
-    fontWeight: '600',
-  },
   moodsGrid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
     gap: 12,
-  },
-  moodButton: {
-    width: '30%',
-    backgroundColor: colors.card,
-    padding: 12,
-    borderRadius: 12,
-    alignItems: 'center',
-    gap: 6,
-    borderWidth: 2,
-    borderColor: 'transparent',
-  },
-  moodButtonSelected: {
-    backgroundColor: colors.primary,
-    borderColor: colors.primary,
-  },
-  moodLabel: {
-    fontSize: 12,
-    color: colors.text,
-    textAlign: 'center',
-    fontWeight: '500',
-  },
-  moodLabelSelected: {
-    color: colors.card,
-    fontWeight: '600',
-  },
-  saveButton: {
-    backgroundColor: colors.primary,
-    padding: 18,
-    borderRadius: 12,
-    alignItems: 'center',
-    marginTop: 8,
-  },
-  saveButtonDisabled: {
-    backgroundColor: colors.secondary,
-    opacity: 0.5,
-  },
-  saveButtonText: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: colors.card,
   },
 });

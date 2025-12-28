@@ -1,5 +1,6 @@
-const tintColorLight = "#0a7ea4";
-const tintColorDark = "#fff";
+
+const tintColorLight = "#C6C9D2"; // Early Dusk
+const tintColorDark = "#F0EFE6"; // Morning Dew
 
 export const zincColors = {
   50: "#fafafa",
@@ -15,26 +16,36 @@ export const zincColors = {
   950: "#09090b",
 };
 
-export const appleBlue = "#007AFF";
-export const appleRed = "#FF3B30";
+// Embody Color Palette
+export const embodyColors = {
+  morningDew: '#F0EFE6',
+  overcast: '#EAEAEA',
+  earlyDusk: '#C6C9D2',
+  tanParchment: '#DCCFC1',
+  almondDust: '#B8AEA8',
+  coffeeGrounds: '#393831',
+};
 
-export const borderColor = "#A1A1AA80";
-export const appleGreen = "#34C759";
+export const appleBlue = "#C6C9D2"; // Using Early Dusk instead
+export const appleRed = "#B8AEA8"; // Using Almond Dust instead
+export const borderColor = "#B8AEA880"; // Almond Dust with transparency
+export const appleGreen = "#C6C9D2"; // Using Early Dusk
+
 export const Colors = {
   light: {
-    text: "#11181C",
-    background: "#fff",
+    text: "#393831", // Coffee Grounds
+    background: "#F0EFE6", // Morning Dew
     tint: tintColorLight,
-    icon: "#687076",
-    tabIconDefault: "#687076",
+    icon: "#B8AEA8", // Almond Dust
+    tabIconDefault: "#B8AEA8",
     tabIconSelected: tintColorLight,
   },
   dark: {
-    text: "#ECEDEE",
-    background: "#151718",
+    text: "#F0EFE6", // Morning Dew
+    background: "#393831", // Coffee Grounds
     tint: tintColorDark,
-    icon: "#9BA1A6",
-    tabIconDefault: "#9BA1A6",
+    icon: "#B8AEA8", // Almond Dust
+    tabIconDefault: "#B8AEA8",
     tabIconSelected: tintColorDark,
   },
 };
