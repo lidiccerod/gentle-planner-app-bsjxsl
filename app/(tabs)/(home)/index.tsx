@@ -11,8 +11,9 @@ import {
 } from 'react-native';
 import { colors, commonStyles } from '@/styles/commonStyles';
 import { IconSymbol } from '@/components/IconSymbol';
+import { BatteryEnergySelector } from '@/components/BatteryEnergySelector';
 import { storageUtils } from '@/utils/storage';
-import { DailyCheckIn, EnergyLevel, Symptom, Mood, energyLevelDescriptions, energyLevelLabels } from '@/types';
+import { DailyCheckIn, EnergyLevel, Symptom, Mood } from '@/types';
 
 export default function HomeScreen() {
   const colorScheme = useColorScheme();
@@ -61,13 +62,6 @@ export default function HomeScreen() {
         : [...prev, symptom]
     );
   };
-
-  const energyLevels: { level: EnergyLevel; label: string; description: string; icon: string }[] = [
-    { level: 'very-low', label: energyLevelLabels['very-low'], description: energyLevelDescriptions['very-low'], icon: 'battery_0_bar' },
-    { level: 'low', label: energyLevelLabels['low'], description: energyLevelDescriptions['low'], icon: 'battery_1_bar' },
-    { level: 'moderate', label: energyLevelLabels['moderate'], description: energyLevelDescriptions['moderate'], icon: 'battery_3_bar' },
-    { level: 'high', label: energyLevelLabels['high'], description: energyLevelDescriptions['high'], icon: 'battery_full' },
-  ];
 
   const symptoms: { symptom: Symptom; label: string }[] = [
     { symptom: 'fatigue', label: 'Fatigue' },
@@ -140,42 +134,6 @@ export default function HomeScreen() {
       fontWeight: '600',
       color: isDark ? colors.darkText : colors.text,
       marginBottom: 16,
-    },
-    energyButton: {
-      flex: 1,
-      backgroundColor: isDark ? colors.darkCard : colors.card,
-      padding: 16,
-      borderRadius: 12,
-      alignItems: 'center',
-      gap: 8,
-      borderWidth: 2,
-      borderColor: 'transparent',
-      minHeight: 120,
-    },
-    energyButtonSelected: {
-      backgroundColor: isDark ? colors.darkPrimary : colors.primary,
-      borderColor: isDark ? colors.darkPrimary : colors.primary,
-    },
-    energyLabel: {
-      fontSize: 13,
-      color: isDark ? colors.darkText : colors.text,
-      textAlign: 'center',
-      fontWeight: '600',
-    },
-    energyDescription: {
-      fontSize: 11,
-      color: isDark ? colors.darkTextSecondary : colors.textSecondary,
-      textAlign: 'center',
-      fontWeight: '400',
-      marginTop: 4,
-    },
-    energyLabelSelected: {
-      color: isDark ? colors.darkBackground : colors.card,
-      fontWeight: '700',
-    },
-    energyDescriptionSelected: {
-      color: isDark ? colors.darkBackground : colors.card,
-      opacity: 0.9,
     },
     symptomChip: {
       backgroundColor: isDark ? colors.darkCard : colors.card,
@@ -266,45 +224,10 @@ export default function HomeScreen() {
 
         <View style={styles.section}>
           <Text style={dynamicStyles.sectionTitle}>Energy Level</Text>
-          <View style={styles.energyGrid}>
-            {energyLevels.map((item, index) => (
-              <React.Fragment key={index}>
-                <TouchableOpacity
-                  style={[
-                    dynamicStyles.energyButton,
-                    selectedEnergy === item.level && dynamicStyles.energyButtonSelected,
-                  ]}
-                  onPress={() => setSelectedEnergy(item.level)}
-                >
-                  <IconSymbol
-                    ios_icon_name="battery.100"
-                    android_material_icon_name={item.icon}
-                    size={28}
-                    color={selectedEnergy === item.level 
-                      ? (isDark ? colors.darkBackground : colors.card)
-                      : (isDark ? colors.darkText : colors.text)
-                    }
-                  />
-                  <Text
-                    style={[
-                      dynamicStyles.energyLabel,
-                      selectedEnergy === item.level && dynamicStyles.energyLabelSelected,
-                    ]}
-                  >
-                    {item.label}
-                  </Text>
-                  <Text
-                    style={[
-                      dynamicStyles.energyDescription,
-                      selectedEnergy === item.level && dynamicStyles.energyDescriptionSelected,
-                    ]}
-                  >
-                    {item.description}
-                  </Text>
-                </TouchableOpacity>
-              </React.Fragment>
-            ))}
-          </View>
+          <BatteryEnergySelector
+            selectedEnergy={selectedEnergy}
+            onSelectEnergy={setSelectedEnergy}
+          />
         </View>
 
         <View style={styles.section}>
@@ -399,11 +322,6 @@ const styles = StyleSheet.create({
   },
   section: {
     marginBottom: 32,
-  },
-  energyGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 12,
   },
   symptomsGrid: {
     flexDirection: 'row',

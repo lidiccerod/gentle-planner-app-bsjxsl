@@ -57,6 +57,7 @@ export default function TasksScreen() {
 
   const loadCategories = async () => {
     const categories = await storageUtils.getAllCategories();
+    console.log('Loaded categories:', categories);
     setAllCategories(categories);
   };
 
@@ -105,9 +106,13 @@ export default function TasksScreen() {
   const addCustomCategory = async () => {
     if (!newCategoryName.trim()) return;
     
-    await storageUtils.addCustomCategory(newCategoryName.trim());
+    const trimmedCategory = newCategoryName.trim();
+    console.log('Adding custom category:', trimmedCategory);
+    
+    await storageUtils.addCustomCategory(trimmedCategory);
     await loadCategories();
-    setNewTaskCategory(newCategoryName.trim());
+    
+    setNewTaskCategory(trimmedCategory);
     setNewCategoryName('');
     setShowAddCategory(false);
   };
@@ -766,7 +771,10 @@ export default function TasksScreen() {
           <View style={[dynamicStyles.modalContent, { maxHeight: '40%' }]}>
             <View style={styles.modalHeader}>
               <Text style={dynamicStyles.modalTitle}>Add Category</Text>
-              <TouchableOpacity onPress={() => setShowAddCategory(false)}>
+              <TouchableOpacity onPress={() => {
+                setShowAddCategory(false);
+                setNewCategoryName('');
+              }}>
                 <IconSymbol
                   ios_icon_name="xmark"
                   android_material_icon_name="close"
