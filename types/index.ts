@@ -50,9 +50,10 @@ export interface Task {
 
 export interface SelfCareReminder {
   id: string;
-  type: 'hydration' | 'medication' | 'rest' | 'breathing' | 'movement';
+  type: 'hydration' | 'medication' | 'rest' | 'breathing' | 'movement' | 'custom';
   title: string;
   enabled: boolean;
+  completed?: boolean;
   lastCompleted?: string;
 }
 

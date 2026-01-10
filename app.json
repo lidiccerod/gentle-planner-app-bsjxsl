@@ -1,7 +1,7 @@
 {
   "expo": {
-    "name": "Gentle Planner",
-    "slug": "Gentle Planner",
+    "name": "Embody",
+    "slug": "Embody",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/natively-dark.png",
@@ -44,5 +44,5 @@
       "router": {}
     }
   },
-  "scheme": "Gentle Planner"
+  "scheme": "Embody"
 }

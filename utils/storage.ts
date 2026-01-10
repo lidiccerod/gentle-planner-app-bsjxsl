@@ -157,6 +157,14 @@ export const storageUtils = {
     }
   },
 
+  async saveReminders(reminders: SelfCareReminder[]): Promise<void> {
+    try {
+      await AsyncStorage.setItem(KEYS.REMINDERS, JSON.stringify(reminders));
+    } catch (error) {
+      console.log('Error saving reminders:', error);
+    }
+  },
+
   async updateReminder(reminderId: string, updates: Partial<SelfCareReminder>): Promise<void> {
     try {
       const reminders = await this.getReminders();
@@ -164,7 +172,7 @@ export const storageUtils = {
       
       if (index >= 0) {
         reminders[index] = { ...reminders[index], ...updates };
-        await AsyncStorage.setItem(KEYS.REMINDERS, JSON.stringify(reminders));
+        await this.saveReminders(reminders);
       }
     } catch (error) {
       console.log('Error updating reminder:', error);
